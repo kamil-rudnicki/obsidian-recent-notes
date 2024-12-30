@@ -23,6 +23,7 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 2. Enable the plugin in Settings → Community Plugins
 3. Click the clock icon in the ribbon (left sidebar) or use the command "Show Recent Notes" to open the view
 4. Click any note to open it
+   - Click with CMD (Mac) or CTRL (Windows/Linux) to open in a new tab
 
 ## Settings
 
@@ -53,7 +54,7 @@ If you encounter any issues or have suggestions, please file them in the [GitHub
 - [x] ignore parameters
 - [x] default 100
 - [x] highlight currently opened note
-- [ ] open in new tab with CMD
+- [x] open in new tab with CMD/CTRL
 - [ ] add screenshot
 - [ ] publish
 

@@ -38,6 +38,10 @@ class RecentNotesView extends ItemView {
 		return "Recent Notes";
 	}
 
+	public getIcon(): string {
+		return 'clock-10';
+	}
+
 	async getFirstLineOfFile(file: TFile): Promise<string> {
 		const content = await this.app.vault.cachedRead(file);
 		const lines = content.split('\n');
@@ -133,8 +137,12 @@ class RecentNotesView extends ItemView {
 				cls: 'recent-note-preview'
 			});
 
-			fileContainer.addEventListener('click', () => {
-				this.app.workspace.getLeaf().openFile(file);
+			fileContainer.addEventListener('click', (event: MouseEvent) => {
+				const leaf = this.app.workspace.getLeaf(
+					// Create new leaf if CMD/CTRL is pressed
+					event.metaKey || event.ctrlKey
+				);
+				leaf.openFile(file);
 			});
 		}
 	}
@@ -182,7 +190,7 @@ export default class RecentNotesPlugin extends Plugin {
 			(leaf) => (this.view = new RecentNotesView(leaf, this))
 		);
 
-		this.addRibbonIcon('clock', 'Recent Notes', () => {
+		this.addRibbonIcon('clock-10', 'Recent Notes', () => {
 			this.activateView();
 		});
 

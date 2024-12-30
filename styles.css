@@ -8,7 +8,7 @@ If your plugin does not need CSS, delete this file.
 */
 
 .recent-note-item {
-    padding: 8px 12px;
+    padding: 4px 12px;
     margin: 2px 0;
     cursor: pointer;
     border-radius: 4px;
@@ -25,16 +25,19 @@ If your plugin does not need CSS, delete this file.
 
 .recent-note-title {
     font-size: 0.95em;
-    font-weight: 500;
-    margin-bottom: 2px;
+    font-weight: 600;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .recent-note-info {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     color: var(--text-faint);
-    font-size: 0.85em;
+    font-size: 0.8em;
 }
 
 .recent-note-date {
