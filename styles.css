@@ -19,6 +19,10 @@ If your plugin does not need CSS, delete this file.
     background-color: var(--background-modifier-hover);
 }
 
+.recent-note-item.is-active {
+    background-color: var(--background-modifier-hover);
+}
+
 .recent-note-title {
     font-size: 0.95em;
     font-weight: 500;

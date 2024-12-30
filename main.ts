@@ -6,18 +6,29 @@ interface RecentNotesSettings {
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
-	maxNotesToShow: 30
+	maxNotesToShow: 100
 }
 
 const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
 
 class RecentNotesView extends ItemView {
 	plugin: RecentNotesPlugin;
+	private refreshTimeout: NodeJS.Timeout | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: RecentNotesPlugin) {
 		super(leaf);
 		this.plugin = plugin;
 	}
+
+	private debouncedRefresh = () => {
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+		}
+		this.refreshTimeout = setTimeout(() => {
+			this.refreshView();
+			this.refreshTimeout = null;
+		}, 100);
+	};
 
 	getViewType(): string {
 		return VIEW_TYPE_RECENT_NOTES;
@@ -58,6 +69,7 @@ class RecentNotesView extends ItemView {
 			.slice(0, this.plugin.settings.maxNotesToShow);
 
 		let currentSection = '';
+		const activeFile = this.app.workspace.getActiveFile();
 		
 		for (const file of files) {
 			const fileDate = moment(file.stat.mtime);
@@ -68,7 +80,9 @@ class RecentNotesView extends ItemView {
 				container.createEl('h6', { text: section, cls: 'recent-notes-view'});
 			}
 
-			const fileContainer = container.createEl('div', { cls: 'recent-note-item' });
+			const fileContainer = container.createEl('div', { 
+				cls: `recent-note-item ${activeFile && activeFile.path === file.path ? 'is-active' : ''}`
+			});
 			const titleEl = fileContainer.createEl('div', { 
 				text: file.basename,
 				cls: 'recent-note-title'
@@ -108,25 +122,31 @@ class RecentNotesView extends ItemView {
 	async onOpen() {
 		await this.refreshView();
 		
-		// Refresh view when files change
+		// Register all events with the debounced refresh
 		this.registerEvent(
-			this.app.vault.on('modify', () => this.refreshView())
+			this.app.vault.on('modify', this.debouncedRefresh)
 		);
 		this.registerEvent(
-			this.app.vault.on('create', () => this.refreshView())
+			this.app.vault.on('create', this.debouncedRefresh)
 		);
 		this.registerEvent(
-			this.app.vault.on('delete', () => this.refreshView())
+			this.app.vault.on('delete', this.debouncedRefresh)
 		);
 		this.registerEvent(
-			this.app.vault.on('rename', () => this.refreshView())
+			this.app.vault.on('rename', this.debouncedRefresh)
 		);
 		this.registerEvent(
-			this.app.metadataCache.on('changed', () => this.refreshView())
+			this.app.workspace.on('active-leaf-change', this.debouncedRefresh)
 		);
 		this.registerEvent(
-			this.app.metadataCache.on('resolve', () => this.refreshView())
+			this.app.workspace.on('file-open', this.debouncedRefresh)
 		);
+	}
+
+	async onClose() {
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+		}
 	}
 }
 
@@ -202,7 +222,7 @@ class RecentNotesSettingTab extends PluginSettingTab {
 			.setName('Maximum notes to show')
 			.setDesc('How many recent notes to display in the view')
 			.addText(text => text
-				.setPlaceholder('30')
+				.setPlaceholder('100')
 				.setValue(this.plugin.settings.maxNotesToShow.toString())
 				.onChange(async (value) => {
 					const numValue = parseInt(value);
@@ -216,3 +236,4 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 	}
 }
+
