@@ -40,8 +40,28 @@ class RecentNotesView extends ItemView {
 
 	async getFirstLineOfFile(file: TFile): Promise<string> {
 		const content = await this.app.vault.cachedRead(file);
-		const firstLine = content.split('\n')[0].replace(/^#\s*/, ''); // Remove heading markers
-		return firstLine || 'No additional text';
+		const lines = content.split('\n');
+		
+		// Skip YAML frontmatter if present
+		let startIndex = 0;
+		if (lines[0]?.trim() === '---') {
+			for (let i = 1; i < lines.length; i++) {
+				if (lines[i]?.trim() === '---') {
+					startIndex = i + 1;
+					break;
+				}
+			}
+		}
+		
+		// Find first non-empty line after frontmatter
+		for (let i = startIndex; i < lines.length; i++) {
+			const line = lines[i]?.trim();
+			if (line && line !== '---') {
+				return line.replace(/^#\s*/, ''); // Remove heading markers
+			}
+		}
+		
+		return 'No additional text';
 	}
 
 	getTimeSection(date: moment.Moment): string {

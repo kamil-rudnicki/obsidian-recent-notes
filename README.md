@@ -50,11 +50,12 @@ If you encounter any issues or have suggestions, please file them in the [GitHub
 
 ## Tasks
 
-- [ ] ignore parameters
+- [x] ignore parameters
 - [x] default 100
 - [x] highlight currently opened note
 - [ ] open in new tab with CMD
-- [ ] add search
+- [ ] add screenshot
+- [ ] publish
 
 ## License
 
