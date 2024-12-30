@@ -3,7 +3,7 @@
 	"name": "Recent Notes",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Shows a list of recently edited notes with previews, organized by time periods.",
+	"description": "List of recently edited notes with previews by time periods",
 	"author": "Kamil Rudnicki",
 	"authorUrl": "https://kamilrudnicki.com",
 	"isDesktopOnly": false
