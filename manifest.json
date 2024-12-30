@@ -1,7 +1,7 @@
 {
-	"id": "obsidian-recent-notes",
+	"id": "recent-notes",
 	"name": "Recent Notes",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "List of recently edited notes with previews by time periods",
 	"author": "Kamil Rudnicki",
