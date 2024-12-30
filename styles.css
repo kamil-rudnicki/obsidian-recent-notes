@@ -57,14 +57,20 @@ If your plugin does not need CSS, delete this file.
 }
 
 .recent-notes-view h6 {
-    position: sticky;
+    /* position: sticky; */
     top: -14px;
     padding: 6px 0px;
     margin: 26px 0px 0px 0px;
-    background-color: var(--background-secondary);
+    /* background-color: var(--background-secondary); */
     color: var(--text-muted);
     font-size: 0.85em;
     font-weight: 500;
     z-index: 1;
     border-bottom: 1px solid var(--background-modifier-border);
+    /* backdrop-filter: blur(5px) contrast(200%);
+    opacity: 90%; */
+}
+
+.recent-notes-view h6:first-of-type {
+    margin-top: 10px;
 }
