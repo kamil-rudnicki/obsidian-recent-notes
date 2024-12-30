@@ -8,7 +8,7 @@ If your plugin does not need CSS, delete this file.
 */
 
 .recent-note-item {
-    padding: 4px 12px;
+    padding: 8px 12px;
     margin: 2px 0;
     cursor: pointer;
     border-radius: 4px;
@@ -29,12 +29,12 @@ If your plugin does not need CSS, delete this file.
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--text-muted);
+    color: var(--text-faint);
     font-size: 0.85em;
 }
 
 .recent-note-date {
-    color: var(--text-faint);
+    color: var(--text-muted);
     flex-shrink: 0;
 }
 
@@ -44,10 +44,9 @@ If your plugin does not need CSS, delete this file.
     white-space: nowrap;
 }
 
-.recent-notes-view h3 {
-    margin: 16px 12px 4px;
-    color: var(--text-normal);
+h6.recent-notes-view {
+    margin: 26px 12px 6px 0px;
+    color: var(--text-muted);
     font-size: 0.85em;
     font-weight: 500;
-    text-transform: uppercase;
 }

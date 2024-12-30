@@ -65,7 +65,7 @@ class RecentNotesView extends ItemView {
 			
 			if (section !== currentSection) {
 				currentSection = section;
-				container.createEl('h3', { text: section });
+				container.createEl('h6', { text: section, cls: 'recent-notes-view'});
 			}
 
 			const fileContainer = container.createEl('div', { cls: 'recent-note-item' });
