@@ -6,3 +6,48 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.recent-note-item {
+    padding: 4px 12px;
+    margin: 2px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.recent-note-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.recent-note-title {
+    font-size: 0.95em;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.recent-note-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 0.85em;
+}
+
+.recent-note-date {
+    color: var(--text-faint);
+    flex-shrink: 0;
+}
+
+.recent-note-preview {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recent-notes-view h3 {
+    margin: 16px 12px 4px;
+    color: var(--text-normal);
+    font-size: 0.85em;
+    font-weight: 500;
+    text-transform: uppercase;
+}

@@ -1,85 +1,180 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult } from 'obsidian';
+import { moment } from 'obsidian';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+interface RecentNotesSettings {
+	maxNotesToShow: number;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: RecentNotesSettings = {
+	maxNotesToShow: 30
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
+
+class RecentNotesView extends ItemView {
+	plugin: RecentNotesPlugin;
+
+	constructor(leaf: WorkspaceLeaf, plugin: RecentNotesPlugin) {
+		super(leaf);
+		this.plugin = plugin;
+	}
+
+	getViewType(): string {
+		return VIEW_TYPE_RECENT_NOTES;
+	}
+
+	getDisplayText(): string {
+		return "Recent Notes";
+	}
+
+	async getFirstLineOfFile(file: TFile): Promise<string> {
+		const content = await this.app.vault.cachedRead(file);
+		const firstLine = content.split('\n')[0].replace(/^#\s*/, ''); // Remove heading markers
+		return firstLine || 'No additional text';
+	}
+
+	getTimeSection(date: moment.Moment): string {
+		const now = moment();
+		if (date.isSame(now, 'day')) return 'Today';
+		if (date.isSame(now.subtract(1, 'day'), 'day')) return 'Yesterday';
+		if (date.isAfter(now.subtract(7, 'days'))) return 'Previous 7 Days';
+		if (date.isAfter(now.subtract(30, 'days'))) return 'Previous 30 Days';
+		
+		// For dates in current year, show month name
+		if (date.isSame(now, 'year')) {
+			return date.format('MMMM');
+		}
+		// For previous years, show year only
+		return date.format('YYYY');
+	}
+
+	async refreshView() {
+		const container = this.containerEl.children[1];
+		container.empty();
+		
+		const files = this.app.vault.getFiles()
+			.filter(file => file.extension === 'md')
+			.sort((a, b) => b.stat.mtime - a.stat.mtime)
+			.slice(0, this.plugin.settings.maxNotesToShow);
+
+		let currentSection = '';
+		
+		for (const file of files) {
+			const fileDate = moment(file.stat.mtime);
+			const section = this.getTimeSection(fileDate);
+			
+			if (section !== currentSection) {
+				currentSection = section;
+				container.createEl('h3', { text: section });
+			}
+
+			const fileContainer = container.createEl('div', { cls: 'recent-note-item' });
+			const titleEl = fileContainer.createEl('div', { 
+				text: file.basename,
+				cls: 'recent-note-title'
+			});
+
+			const infoContainer = fileContainer.createEl('div', { cls: 'recent-note-info' });
+			
+			const now = moment();
+			let dateText;
+			if (section === 'Today') {
+				dateText = moment(file.stat.mtime).format('HH:mm');
+			} else if (section === 'Yesterday') {
+				dateText = moment(file.stat.mtime).format('HH:mm');
+			} else if (moment(file.stat.mtime).isAfter(now.subtract(7, 'days'))) {
+				dateText = moment(file.stat.mtime).format('dddd');
+			} else {
+				dateText = moment(file.stat.mtime).format('DD/MM/YYYY');
+			}
+				
+			infoContainer.createEl('span', {
+				text: dateText,
+				cls: 'recent-note-date'
+			});
+
+			const firstLine = await this.getFirstLineOfFile(file);
+			infoContainer.createEl('span', {
+				text: firstLine,
+				cls: 'recent-note-preview'
+			});
+
+			fileContainer.addEventListener('click', () => {
+				this.app.workspace.getLeaf().openFile(file);
+			});
+		}
+	}
+
+	async onOpen() {
+		await this.refreshView();
+		
+		// Refresh view when files change
+		this.registerEvent(
+			this.app.vault.on('modify', () => this.refreshView())
+		);
+		this.registerEvent(
+			this.app.vault.on('create', () => this.refreshView())
+		);
+		this.registerEvent(
+			this.app.vault.on('delete', () => this.refreshView())
+		);
+		this.registerEvent(
+			this.app.vault.on('rename', () => this.refreshView())
+		);
+		this.registerEvent(
+			this.app.metadataCache.on('changed', () => this.refreshView())
+		);
+		this.registerEvent(
+			this.app.metadataCache.on('resolve', () => this.refreshView())
+		);
+	}
+}
+
+export default class RecentNotesPlugin extends Plugin {
+	settings: RecentNotesSettings;
+	view: RecentNotesView;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+		this.registerView(
+			VIEW_TYPE_RECENT_NOTES,
+			(leaf) => (this.view = new RecentNotesView(leaf, this))
+		);
+
+		this.addRibbonIcon('clock', 'Recent Notes', () => {
+			this.activateView();
 		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
-
-		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
+			id: 'show-recent-notes',
+			name: 'Show Recent Notes',
 			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-			}
+				this.activateView();
+			},
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		this.addSettingTab(new RecentNotesSettingTab(this.app, this));
 	}
 
-	onunload() {
-
+	async activateView() {
+		const { workspace } = this.app;
+		
+		let leaf: WorkspaceLeaf | null = workspace.getLeavesOfType(VIEW_TYPE_RECENT_NOTES)[0];
+		
+		if (!leaf) {
+			leaf = workspace.getRightLeaf(false);
+			if (leaf) {
+				await leaf.setViewState({
+					type: VIEW_TYPE_RECENT_NOTES,
+					active: true,
+				});
+			}
+		}
+		
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
 	}
 
 	async loadSettings() {
@@ -91,44 +186,33 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
+class RecentNotesSettingTab extends PluginSettingTab {
+	plugin: RecentNotesPlugin;
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: RecentNotesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
 	display(): void {
-		const {containerEl} = this;
-
+		const { containerEl } = this;
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Maximum notes to show')
+			.setDesc('How many recent notes to display in the view')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('30')
+				.setValue(this.plugin.settings.maxNotesToShow.toString())
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
+					const numValue = parseInt(value);
+					if (!isNaN(numValue)) {
+						this.plugin.settings.maxNotesToShow = numValue;
+						await this.plugin.saveSettings();
+						if (this.plugin.view) {
+							await this.plugin.view.refreshView();
+						}
+					}
 				}));
 	}
 }
