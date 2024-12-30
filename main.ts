@@ -18,6 +18,7 @@ class RecentNotesView extends ItemView {
 	constructor(leaf: WorkspaceLeaf, plugin: RecentNotesPlugin) {
 		super(leaf);
 		this.plugin = plugin;
+		this.containerEl.addClass('recent-notes-view');
 	}
 
 	private debouncedRefresh = () => {
@@ -101,7 +102,7 @@ class RecentNotesView extends ItemView {
 			
 			if (section !== currentSection) {
 				currentSection = section;
-				container.createEl('h6', { text: section, cls: 'recent-notes-view'});
+				container.createEl('h6', { text: section });
 			}
 
 			const fileContainer = container.createEl('div', { 

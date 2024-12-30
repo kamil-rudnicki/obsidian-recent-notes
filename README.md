@@ -2,6 +2,8 @@
 
 A plugin that shows your recently edited notes in a clean, organized timeline view, similar as Apple Notes. Perfect for keeping track of your latest work and quickly accessing recently modified notes.
 
+![Recent Notes Plugin Screenshot](https://raw.githubusercontent.com/kamil-rudnicki/obsidian-recent-notes/master/resources/screenshots/sidebar.png)
+
 ## Features
 
 - Shows recently edited notes organized by time periods:
@@ -48,15 +50,6 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 ## Support
 
 If you encounter any issues or have suggestions, please file them in the [GitHub Issues](https://github.com/kamil-rudnicki/obsidian-recent-notes/issues) section.
-
-## Tasks
-
-- [x] ignore parameters
-- [x] default 100
-- [x] highlight currently opened note
-- [x] open in new tab with CMD/CTRL
-- [ ] add screenshot
-- [ ] publish
 
 ## License
 
