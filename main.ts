@@ -197,7 +197,7 @@ export default class RecentNotesPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'show-recent-notes',
-			name: 'Show Recent Notes',
+			name: 'Open',
 			callback: () => {
 				this.activateView();
 			},
