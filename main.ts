@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult, Menu } from 'obsidian';
 import { moment } from 'obsidian';
 
 interface RecentNotesSettings {
@@ -144,6 +144,32 @@ class RecentNotesView extends ItemView {
 					event.metaKey || event.ctrlKey
 				);
 				leaf.openFile(file);
+			});
+
+			// Add context menu handler
+			fileContainer.addEventListener('contextmenu', (event: MouseEvent) => {
+				event.preventDefault();
+				const menu = new Menu();
+
+				// Add delete option at the top
+				menu.addItem((item) => {
+					item
+						.setIcon('trash')
+						.setTitle('Delete')
+						.onClick(async () => {
+							const confirmed = await this.app.vault.adapter.exists(file.path);
+							if (confirmed) {
+								await this.app.vault.trash(file, true);
+								this.refreshView();
+							}
+						});
+				});
+
+				menu.addSeparator();
+
+				// Show standard file menu
+				this.app.workspace.trigger('file-menu', menu, file, 'recent-notes-view', null);
+				menu.showAtPosition({ x: event.clientX, y: event.clientY });
 			});
 		}
 	}
