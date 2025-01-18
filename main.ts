@@ -36,7 +36,7 @@ class RecentNotesView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Recent Notes";
+		return "Recent notes";
 	}
 
 	public getIcon(): string {
@@ -73,8 +73,8 @@ class RecentNotesView extends ItemView {
 		const now = moment();
 		if (date.isSame(now, 'day')) return 'Today';
 		if (date.isSame(now.subtract(1, 'day'), 'day')) return 'Yesterday';
-		if (date.isAfter(now.subtract(7, 'days'))) return 'Previous 7 Days';
-		if (date.isAfter(now.subtract(30, 'days'))) return 'Previous 30 Days';
+		if (date.isAfter(now.subtract(7, 'days'))) return 'Previous 7 days';
+		if (date.isAfter(now.subtract(30, 'days'))) return 'Previous 30 days';
 		
 		// For dates in current year, show month name
 		if (date.isSame(now, 'year')) {
@@ -191,7 +191,7 @@ export default class RecentNotesPlugin extends Plugin {
 			(leaf) => (this.view = new RecentNotesView(leaf, this))
 		);
 
-		this.addRibbonIcon('clock-10', 'Recent Notes', () => {
+		this.addRibbonIcon('clock-10', 'Recent notes', () => {
 			this.activateView();
 		});
 

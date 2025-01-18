@@ -1,6 +1,6 @@
 .recent-note-item {
-    padding: 8px 12px;
-    margin: 2px 0;
+    padding: 10px 12px;
+    margin: 1px 0px;
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.2s ease;
@@ -11,7 +11,8 @@
 }
 
 .recent-note-item.is-active {
-    background-color: var(--background-modifier-hover);
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
 }
 
 .recent-note-title {
@@ -34,6 +35,14 @@
 .recent-note-date {
     color: var(--text-muted);
     flex-shrink: 0;
+}
+
+.recent-note-item.is-active .recent-note-info {
+    color: var(--text-on-accent);
+}
+
+.recent-note-item.is-active .recent-note-date {
+    color: var(--text-on-accent);
 }
 
 .recent-note-preview {
