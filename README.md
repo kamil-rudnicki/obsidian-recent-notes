@@ -53,6 +53,7 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 - Sticky headers that works with transcluent
 - Right click shows default note menu
 - Keyboard navigation
+- Open and focus on note in editor
 
 ## Support
 
