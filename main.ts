@@ -3,10 +3,22 @@ import { moment } from 'obsidian';
 
 interface RecentNotesSettings {
 	maxNotesToShow: number;
+	showMarkdownFiles: boolean;
+	showImageFiles: boolean;
+	showPDFFiles: boolean;
+	showAudioFiles: boolean;
+	showVideoFiles: boolean;
+	showCanvasFiles: boolean;
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
-	maxNotesToShow: 100
+	maxNotesToShow: 100,
+	showMarkdownFiles: true,
+	showImageFiles: true,
+	showPDFFiles: true,
+	showAudioFiles: true,
+	showVideoFiles: true,
+	showCanvasFiles: true
 }
 
 const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
@@ -44,6 +56,35 @@ class RecentNotesView extends ItemView {
 	}
 
 	async getFirstLineOfFile(file: TFile): Promise<string> {
+		const ext = file.extension.toLowerCase();
+		
+		// For non-markdown files, return file type and size
+		if (ext !== 'md') {
+			const size = file.stat.size;
+			let sizeStr = '';
+			if (size < 1024) {
+				sizeStr = `${size} B`;
+			} else if (size < 1024 * 1024) {
+				sizeStr = `${(size / 1024).toFixed(1)} KB`;
+			} else {
+				sizeStr = `${(size / (1024 * 1024)).toFixed(1)} MB`;
+			}
+			
+			if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(ext)) {
+				return `Image file • ${sizeStr}`;
+			} else if (ext === 'pdf') {
+				return `PDF document • ${sizeStr}`;
+			} else if (['mp3', 'wav', 'm4a', 'ogg', '3gp', 'flac', 'webm', 'aac'].includes(ext)) {
+				return `Audio file • ${sizeStr}`;
+			} else if (['mp4', 'webm', 'ogv', 'mov', 'mkv'].includes(ext)) {
+				return `Video file • ${sizeStr}`;
+			} else if (ext === 'canvas') {
+				return 'Canvas file';
+			}
+			return `${ext.toUpperCase()} file • ${sizeStr}`;
+		}
+
+		// For markdown files, show first non-empty line
 		const content = await this.app.vault.cachedRead(file);
 		const lines = content.split('\n');
 		
@@ -89,7 +130,17 @@ class RecentNotesView extends ItemView {
 		container.empty();
 		
 		const files = this.app.vault.getFiles()
-			.filter(file => file.extension === 'md')
+			.filter(file => {
+				const ext = file.extension.toLowerCase();
+				return (
+					(this.plugin.settings.showMarkdownFiles && ext === 'md') ||
+					(this.plugin.settings.showImageFiles && ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(ext)) ||
+					(this.plugin.settings.showPDFFiles && ext === 'pdf') ||
+					(this.plugin.settings.showAudioFiles && ['mp3', 'wav', 'm4a', 'ogg', '3gp', 'flac', 'webm', 'aac'].includes(ext)) ||
+					(this.plugin.settings.showVideoFiles && ['mp4', 'webm', 'ogv', 'mov', 'mkv'].includes(ext)) ||
+					(this.plugin.settings.showCanvasFiles && ext === 'canvas')
+				);
+			})
 			.sort((a, b) => b.stat.mtime - a.stat.mtime)
 			.slice(0, this.plugin.settings.maxNotesToShow);
 
@@ -287,6 +338,86 @@ class RecentNotesSettingTab extends PluginSettingTab {
 						if (this.plugin.view) {
 							await this.plugin.view.refreshView();
 						}
+					}
+				}));
+
+		containerEl.createEl('h3', { text: 'File types to show' });
+
+		new Setting(containerEl)
+			.setName('Show Markdown files')
+			.setDesc('Show .md files in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showMarkdownFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showMarkdownFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show Image files')
+			.setDesc('Show image files (png, jpg, gif, etc.) in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showImageFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showImageFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show PDF files')
+			.setDesc('Show .pdf files in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showPDFFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showPDFFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show Audio files')
+			.setDesc('Show audio files (mp3, wav, etc.) in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showAudioFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showAudioFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show Video files')
+			.setDesc('Show video files (mp4, webm, etc.) in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showVideoFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showVideoFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show Canvas files')
+			.setDesc('Show .canvas files in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showCanvasFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showCanvasFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
 					}
 				}));
 	}
