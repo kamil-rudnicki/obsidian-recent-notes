@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-recent-notes",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "Recent Notes plugin for Obsidian",
 	"main": "main.js",
 	"scripts": {
