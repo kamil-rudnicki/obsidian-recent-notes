@@ -9,6 +9,8 @@ interface RecentNotesSettings {
 	showAudioFiles: boolean;
 	showVideoFiles: boolean;
 	showCanvasFiles: boolean;
+	showCSVFiles: boolean;
+	excludedFolders: string[];
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -18,7 +20,9 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	showPDFFiles: true,
 	showAudioFiles: true,
 	showVideoFiles: true,
-	showCanvasFiles: true
+	showCanvasFiles: true,
+	showCSVFiles: true,
+	excludedFolders: []
 }
 
 const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
@@ -26,11 +30,24 @@ const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
 class RecentNotesView extends ItemView {
 	plugin: RecentNotesPlugin;
 	private refreshTimeout: NodeJS.Timeout | null = null;
+	private lastActiveFile: string | null = null;
+	private firstLineCache: Map<string, { line: string, timestamp: number }> = new Map();
+	private readonly MAX_FILE_SIZE_FOR_PREVIEW = 100 * 1024; // 100 KB
+	private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 	constructor(leaf: WorkspaceLeaf, plugin: RecentNotesPlugin) {
 		super(leaf);
 		this.plugin = plugin;
 		this.containerEl.addClass('recent-notes-view');
+	}
+
+	private clearOldCache() {
+		const now = Date.now();
+		for (const [path, data] of this.firstLineCache.entries()) {
+			if (now - data.timestamp > this.CACHE_DURATION) {
+				this.firstLineCache.delete(path);
+			}
+		}
 	}
 
 	private debouncedRefresh = () => {
@@ -40,8 +57,36 @@ class RecentNotesView extends ItemView {
 		this.refreshTimeout = setTimeout(() => {
 			this.refreshView();
 			this.refreshTimeout = null;
-		}, 100);
+		}, 20);
 	};
+
+	private shouldRefreshForFile(file: TFile | null): boolean {
+		if (!file) return false;
+
+		// Check if it's the same file as last time
+		if (this.lastActiveFile === file.path) return false;
+		this.lastActiveFile = file.path;
+
+		// Check if file is in excluded folder
+		const filePath = file.path.toLowerCase();
+		const isExcluded = this.plugin.settings.excludedFolders.some(folder => {
+			const normalizedFolder = folder.toLowerCase().trim();
+			return normalizedFolder && filePath.startsWith(normalizedFolder + '/');
+		});
+		if (isExcluded) return false;
+
+		// Check if file type is enabled in settings
+		const ext = file.extension.toLowerCase();
+		return (
+			(this.plugin.settings.showMarkdownFiles && ext === 'md') ||
+			(this.plugin.settings.showImageFiles && ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(ext)) ||
+			(this.plugin.settings.showPDFFiles && ext === 'pdf') ||
+			(this.plugin.settings.showAudioFiles && ['mp3', 'wav', 'm4a', 'ogg', '3gp', 'flac', 'webm', 'aac'].includes(ext)) ||
+			(this.plugin.settings.showVideoFiles && ['mp4', 'webm', 'ogv', 'mov', 'mkv'].includes(ext)) ||
+			(this.plugin.settings.showCanvasFiles && ext === 'canvas') ||
+			(this.plugin.settings.showCSVFiles && ext === 'csv')
+		);
+	}
 
 	getViewType(): string {
 		return VIEW_TYPE_RECENT_NOTES;
@@ -80,34 +125,80 @@ class RecentNotesView extends ItemView {
 				return `Video file • ${sizeStr}`;
 			} else if (ext === 'canvas') {
 				return 'Canvas file';
+			} else if (ext === 'csv') {
+				// Skip large CSV files
+				if (file.stat.size > this.MAX_FILE_SIZE_FOR_PREVIEW) {
+					return `CSV file • ${sizeStr}`;
+				}
+
+				// Check cache first
+				const cached = this.firstLineCache.get(file.path);
+				if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+					return cached.line;
+				}
+
+				// For CSV files, show first line (usually headers)
+				try {
+					const content = await this.app.vault.cachedRead(file);
+					const firstLine = content.split('\n')[0]?.trim();
+					if (firstLine) {
+						// Truncate if too long
+						const preview = firstLine.length > 50 ? firstLine.slice(0, 47) + '...' : firstLine;
+						const result = `CSV • ${preview} • ${sizeStr}`;
+						// Cache the result
+						this.firstLineCache.set(file.path, { line: result, timestamp: Date.now() });
+						return result;
+					}
+					return `CSV file • ${sizeStr}`;
+				} catch {
+					return `CSV file • ${sizeStr}`;
+				}
 			}
 			return `${ext.toUpperCase()} file • ${sizeStr}`;
 		}
 
+		// Skip large markdown files
+		if (file.stat.size > this.MAX_FILE_SIZE_FOR_PREVIEW) {
+			return 'Large markdown file';
+		}
+
+		// Check cache first for markdown files
+		const cached = this.firstLineCache.get(file.path);
+		if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+			return cached.line;
+		}
+
 		// For markdown files, show first non-empty line
-		const content = await this.app.vault.cachedRead(file);
-		const lines = content.split('\n');
-		
-		// Skip YAML frontmatter if present
-		let startIndex = 0;
-		if (lines[0]?.trim() === '---') {
-			for (let i = 1; i < lines.length; i++) {
-				if (lines[i]?.trim() === '---') {
-					startIndex = i + 1;
-					break;
+		try {
+			const content = await this.app.vault.cachedRead(file);
+			const lines = content.split('\n');
+			
+			// Skip YAML frontmatter if present
+			let startIndex = 0;
+			if (lines[0]?.trim() === '---') {
+				for (let i = 1; i < lines.length; i++) {
+					if (lines[i]?.trim() === '---') {
+						startIndex = i + 1;
+						break;
+					}
 				}
 			}
-		}
-		
-		// Find first non-empty line after frontmatter
-		for (let i = startIndex; i < lines.length; i++) {
-			const line = lines[i]?.trim();
-			if (line && line !== '---') {
-				return line.replace(/^#\s*/, ''); // Remove heading markers
+			
+			// Find first non-empty line after frontmatter
+			for (let i = startIndex; i < lines.length; i++) {
+				const line = lines[i]?.trim();
+				if (line && line !== '---') {
+					const result = line.replace(/^#\s*/, ''); // Remove heading markers
+					// Cache the result
+					this.firstLineCache.set(file.path, { line: result, timestamp: Date.now() });
+					return result;
+				}
 			}
+			
+			return 'No additional text';
+		} catch {
+			return 'Error reading file';
 		}
-		
-		return 'No additional text';
 	}
 
 	getTimeSection(date: moment.Moment): string {
@@ -130,22 +221,14 @@ class RecentNotesView extends ItemView {
 		container.empty();
 		
 		const files = this.app.vault.getFiles()
-			.filter(file => {
-				const ext = file.extension.toLowerCase();
-				return (
-					(this.plugin.settings.showMarkdownFiles && ext === 'md') ||
-					(this.plugin.settings.showImageFiles && ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(ext)) ||
-					(this.plugin.settings.showPDFFiles && ext === 'pdf') ||
-					(this.plugin.settings.showAudioFiles && ['mp3', 'wav', 'm4a', 'ogg', '3gp', 'flac', 'webm', 'aac'].includes(ext)) ||
-					(this.plugin.settings.showVideoFiles && ['mp4', 'webm', 'ogv', 'mov', 'mkv'].includes(ext)) ||
-					(this.plugin.settings.showCanvasFiles && ext === 'canvas')
-				);
-			})
+			.filter(file => this.shouldRefreshForFile(file))
 			.sort((a, b) => b.stat.mtime - a.stat.mtime)
 			.slice(0, this.plugin.settings.maxNotesToShow);
 
 		let currentSection = '';
-		const activeFile = this.app.workspace.getActiveFile();
+		const activeLeaf = this.app.workspace.activeLeaf;
+		const activeState = activeLeaf?.getViewState();
+		const activeFilePath = activeState?.state?.file;
 		
 		for (const file of files) {
 			const fileDate = moment(file.stat.mtime);
@@ -157,7 +240,7 @@ class RecentNotesView extends ItemView {
 			}
 
 			const fileContainer = container.createEl('div', { 
-				cls: `recent-note-item ${activeFile && activeFile.path === file.path ? 'is-active' : ''}`
+				cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 			});
 			const titleEl = fileContainer.createEl('div', { 
 				text: file.basename,
@@ -189,12 +272,19 @@ class RecentNotesView extends ItemView {
 				cls: 'recent-note-preview'
 			});
 
-			fileContainer.addEventListener('click', (event: MouseEvent) => {
+			fileContainer.addEventListener('click', async (event: MouseEvent) => {
 				const leaf = this.app.workspace.getLeaf(
 					// Create new leaf if CMD/CTRL is pressed
 					event.metaKey || event.ctrlKey
 				);
-				leaf.openFile(file);
+				await leaf.openFile(file);
+
+				// For non-markdown files, give them a moment to become active
+				if (file.extension !== 'md') {
+					setTimeout(() => {
+						this.debouncedRefresh();
+					}, 50);
+				}
 			});
 
 			// Add context menu handler
@@ -226,26 +316,53 @@ class RecentNotesView extends ItemView {
 	}
 
 	async onOpen() {
+		// Clear old cache entries periodically
+		this.registerInterval(window.setInterval(() => this.clearOldCache(), this.CACHE_DURATION));
 		await this.refreshView();
 		
 		// Register all events with the debounced refresh
 		this.registerEvent(
-			this.app.vault.on('modify', this.debouncedRefresh)
+			this.app.vault.on('modify', () => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (this.shouldRefreshForFile(activeFile)) {
+					this.debouncedRefresh();
+				}
+			})
 		);
+
+		// Only refresh on create/delete if it matches our criteria
 		this.registerEvent(
-			this.app.vault.on('create', this.debouncedRefresh)
+			this.app.vault.on('create', (file) => {
+				if (file instanceof TFile && this.shouldRefreshForFile(file)) {
+					this.debouncedRefresh();
+				}
+			})
 		);
+
 		this.registerEvent(
-			this.app.vault.on('delete', this.debouncedRefresh)
+			this.app.vault.on('delete', (file) => {
+				if (file instanceof TFile && this.shouldRefreshForFile(file)) {
+					this.debouncedRefresh();
+				}
+			})
 		);
+
 		this.registerEvent(
-			this.app.vault.on('rename', this.debouncedRefresh)
+			this.app.vault.on('rename', (file) => {
+				if (file instanceof TFile && this.shouldRefreshForFile(file)) {
+					this.debouncedRefresh();
+				}
+			})
 		);
+
+		// Only refresh on leaf change if the active file changed
 		this.registerEvent(
-			this.app.workspace.on('active-leaf-change', this.debouncedRefresh)
-		);
-		this.registerEvent(
-			this.app.workspace.on('file-open', this.debouncedRefresh)
+			this.app.workspace.on('active-leaf-change', () => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (this.shouldRefreshForFile(activeFile)) {
+					this.debouncedRefresh();
+				}
+			})
 		);
 	}
 
@@ -341,6 +458,23 @@ class RecentNotesSettingTab extends PluginSettingTab {
 					}
 				}));
 
+		new Setting(containerEl)
+			.setName('Excluded folders')
+			.setDesc('List of folders to exclude from recent files (one per line)')
+			.addTextArea(text => text
+				.setPlaceholder('folder1\nfolder2/subfolder')
+				.setValue(this.plugin.settings.excludedFolders.join('\n'))
+				.onChange(async (value) => {
+					const folders = value.split('\n')
+						.map(folder => folder.trim())
+						.filter(folder => folder.length > 0);
+					this.plugin.settings.excludedFolders = folders;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
 		containerEl.createEl('h3', { text: 'File types to show' });
 
 		new Setting(containerEl)
@@ -415,6 +549,19 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showCanvasFiles)
 				.onChange(async (value) => {
 					this.plugin.settings.showCanvasFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show CSV files')
+			.setDesc('Show .csv files in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showCSVFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showCSVFiles = value;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
