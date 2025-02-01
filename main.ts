@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult, Menu } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult, Menu, FileView } from 'obsidian';
 import { moment } from 'obsidian';
 
 interface RecentNotesSettings {
@@ -228,7 +228,7 @@ class RecentNotesView extends ItemView {
 		let currentSection = '';
 		const activeLeaf = this.app.workspace.activeLeaf;
 		const activeState = activeLeaf?.getViewState();
-		const activeFilePath = activeState?.state?.file || activeLeaf?.view?.file?.path;
+		const activeFilePath = activeState?.state?.file;
 		
 		for (const file of files) {
 			const fileDate = moment(file.stat.mtime);
