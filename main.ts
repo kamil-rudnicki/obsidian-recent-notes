@@ -66,11 +66,7 @@ class RecentNotesView extends ItemView {
 
 	private shouldRefreshForFile(file: TFile | null): boolean {
 		if (!file) return false;
-
-		// Check if it's the same file as last time
-		if (this.lastActiveFile === file.path) return false;
-		this.lastActiveFile = file.path;
-
+		// Removed the lastActiveFile check to ensure the active file is not filtered out
 		// Check if file is in excluded folder
 		const filePath = file.path.toLowerCase();
 		const isExcluded = this.plugin.settings.excludedFolders.some(folder => {
@@ -97,6 +93,10 @@ class RecentNotesView extends ItemView {
 			(this.plugin.settings.showCanvasFiles && ext === 'canvas') ||
 			(this.plugin.settings.showCSVFiles && ext === 'csv')
 		);
+	}
+
+	public clearCache(): void {
+		this.firstLineCache.clear();
 	}
 
 	getViewType(): string {
@@ -492,22 +492,22 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-				.setName('Preview lines')
-				.setDesc('Number of text lines to show in the preview (1-3)')
-				.addDropdown(dropdown => dropdown
-					.addOption('1', '1 line')
-					.addOption('2', '2 lines')
-					.addOption('3', '3 lines')
-					.setValue(this.plugin.settings.previewLines.toString())
-					.onChange(async (value) => {
-						this.plugin.settings.previewLines = parseInt(value);
-						await this.plugin.saveSettings();
-						// Clear the entire cache when changing preview lines
-						if (this.plugin.view) {
-							this.plugin.view.firstLineCache.clear();
-							await this.plugin.view.refreshView();
-						}
-					}));
+			.setName('Preview lines')
+			.setDesc('Number of text lines to show in the preview (1-3)')
+			.addDropdown(dropdown => dropdown
+				.addOption('1', '1 line')
+				.addOption('2', '2 lines')
+				.addOption('3', '3 lines')
+				.setValue(this.plugin.settings.previewLines.toString())
+				.onChange(async (value) => {
+					this.plugin.settings.previewLines = parseInt(value);
+					await this.plugin.saveSettings();
+					// Clear the entire cache when changing preview lines
+					if (this.plugin.view) {
+						this.plugin.view.clearCache();
+						await this.plugin.view.refreshView();
+					}
+				}));
 
 		new Setting(containerEl)
 			.setName('Excluded folders')
