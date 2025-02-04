@@ -242,9 +242,11 @@ class RecentNotesView extends ItemView {
 			.slice(0, this.plugin.settings.maxNotesToShow);
 
 		let currentSection = '';
-		const activeLeaf = this.app.workspace.activeLeaf;
-		const activeState = activeLeaf?.getViewState();
-		const activeFilePath = activeState?.state?.file;
+		const activeFile = this.app.workspace.getActiveFile();
+		if (activeFile) {
+			this.lastActiveFile = activeFile.path;
+		}
+		const activeFilePath = activeFile ? activeFile.path : this.lastActiveFile;
 		
 		for (const file of files) {
 			const fileDate = moment(file.stat.mtime);
