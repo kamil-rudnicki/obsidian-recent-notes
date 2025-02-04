@@ -11,6 +11,7 @@ interface RecentNotesSettings {
 	showCanvasFiles: boolean;
 	showCSVFiles: boolean;
 	excludedFolders: string[];
+	excludedFiles: string[];
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -22,7 +23,8 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	showVideoFiles: true,
 	showCanvasFiles: true,
 	showCSVFiles: true,
-	excludedFolders: []
+	excludedFolders: [],
+	excludedFiles: []
 }
 
 const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
@@ -74,6 +76,13 @@ class RecentNotesView extends ItemView {
 			return normalizedFolder && filePath.startsWith(normalizedFolder + '/');
 		});
 		if (isExcluded) return false;
+
+		// Check if file is in excluded files list
+		const isExcludedFile = this.plugin.settings.excludedFiles.some(excludedFile => {
+			const normalizedExcludedFile = excludedFile.toLowerCase().trim();
+			return normalizedExcludedFile && filePath === normalizedExcludedFile;
+		});
+		if (isExcludedFile) return false;
 
 		// Check if file type is enabled in settings
 		const ext = file.extension.toLowerCase();
@@ -469,6 +478,23 @@ class RecentNotesSettingTab extends PluginSettingTab {
 						.map(folder => folder.trim())
 						.filter(folder => folder.length > 0);
 					this.plugin.settings.excludedFolders = folders;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Excluded files')
+			.setDesc('List of specific files to exclude from recent files (one per line, full path required)')
+			.addTextArea(text => text
+				.setPlaceholder('folder1/note.md\nfolder2/image.png')
+				.setValue(this.plugin.settings.excludedFiles.join('\n'))
+				.onChange(async (value) => {
+					const files = value.split('\n')
+						.map(file => file.trim())
+						.filter(file => file.length > 0);
+					this.plugin.settings.excludedFiles = files;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
