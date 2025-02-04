@@ -12,6 +12,7 @@ interface RecentNotesSettings {
 	showCSVFiles: boolean;
 	excludedFolders: string[];
 	excludedFiles: string[];
+	previewLines: number;
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -24,7 +25,8 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	showCanvasFiles: true,
 	showCSVFiles: true,
 	excludedFolders: [],
-	excludedFiles: []
+	excludedFiles: [],
+	previewLines: 1
 }
 
 const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
@@ -194,13 +196,19 @@ class RecentNotesView extends ItemView {
 			}
 			
 			// Find first non-empty line after frontmatter
-			for (let i = startIndex; i < lines.length; i++) {
+			let previewLines: string[] = [];
+			for (let i = startIndex; i < lines.length && previewLines.length < this.plugin.settings.previewLines; i++) {
 				const line = lines[i]?.trim();
 				if (line && line !== '---' && !line.startsWith('# ')) {
-					// Cache the result
-					this.firstLineCache.set(file.path, { line: line, timestamp: Date.now() });
-					return line;
+					previewLines.push(line);
 				}
+			}
+			
+			if (previewLines.length > 0) {
+				const preview = previewLines.join('\n');
+				// Cache the result
+				this.firstLineCache.set(file.path, { line: preview, timestamp: Date.now() });
+				return preview;
 			}
 			
 			return 'No additional text';
@@ -255,7 +263,10 @@ class RecentNotesView extends ItemView {
 				cls: 'recent-note-title'
 			});
 
-			const infoContainer = fileContainer.createEl('div', { cls: 'recent-note-info' });
+			const hasMultipleLines = this.plugin.settings.previewLines > 1;
+			const infoContainer = fileContainer.createEl('div', { 
+				cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+			});
 			
 			const now = moment();
 			let dateText;
@@ -268,16 +279,23 @@ class RecentNotesView extends ItemView {
 			} else {
 				dateText = moment(file.stat.mtime).format('DD/MM/YYYY');
 			}
-				
-			infoContainer.createEl('span', {
-				text: dateText,
-				cls: 'recent-note-date'
-			});
 
 			const firstLine = await this.getFirstLineOfFile(file);
-			infoContainer.createEl('span', {
-				text: firstLine,
-				cls: 'recent-note-preview'
+			const previewContainer = infoContainer.createEl('div', {
+				cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+			});
+			
+			firstLine.split('\n').forEach(line => {
+				previewContainer.createEl('div', {
+					text: line,
+					cls: 'recent-note-preview-line'
+				});
+			});
+
+			// Add date after preview if multiple lines are shown
+			const dateEl = infoContainer.createEl('span', {
+				text: dateText,
+				cls: hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
 			});
 
 			fileContainer.addEventListener('click', async (event: MouseEvent) => {
@@ -472,6 +490,24 @@ class RecentNotesSettingTab extends PluginSettingTab {
 						}
 					}
 				}));
+
+		new Setting(containerEl)
+				.setName('Preview lines')
+				.setDesc('Number of text lines to show in the preview (1-3)')
+				.addDropdown(dropdown => dropdown
+					.addOption('1', '1 line')
+					.addOption('2', '2 lines')
+					.addOption('3', '3 lines')
+					.setValue(this.plugin.settings.previewLines.toString())
+					.onChange(async (value) => {
+						this.plugin.settings.previewLines = parseInt(value);
+						await this.plugin.saveSettings();
+						// Clear the entire cache when changing preview lines
+						if (this.plugin.view) {
+							this.plugin.view.firstLineCache.clear();
+							await this.plugin.view.refreshView();
+						}
+					}));
 
 		new Setting(containerEl)
 			.setName('Excluded folders')
