@@ -307,11 +307,14 @@ class RecentNotesView extends ItemView {
 						.setIcon('trash')
 						.setTitle('Delete')
 						.onClick(async () => {
-							const confirmed = await this.app.vault.adapter.exists(file.path);
-							if (confirmed) {
-								await this.app.vault.trash(file, true);
-								this.refreshView();
-							}
+							const exists = await this.app.vault.adapter.exists(file.path);
+							if (!exists) return;
+							
+							const confirmation = confirm(`Are you sure you want to delete "${file.path}"?`);
+							if (!confirmation) return;
+							
+							await this.app.fileManager.trashFile(file);
+							this.refreshView();
 						});
 				});
 
