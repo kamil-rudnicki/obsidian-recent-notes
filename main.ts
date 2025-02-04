@@ -196,11 +196,10 @@ class RecentNotesView extends ItemView {
 			// Find first non-empty line after frontmatter
 			for (let i = startIndex; i < lines.length; i++) {
 				const line = lines[i]?.trim();
-				if (line && line !== '---') {
-					const result = line.replace(/^#\s*/, ''); // Remove heading markers
+				if (line && line !== '---' && !line.startsWith('# ')) {
 					// Cache the result
-					this.firstLineCache.set(file.path, { line: result, timestamp: Date.now() });
-					return result;
+					this.firstLineCache.set(file.path, { line: line, timestamp: Date.now() });
+					return line;
 				}
 			}
 			
@@ -334,7 +333,11 @@ class RecentNotesView extends ItemView {
 		
 		// Register all events with the debounced refresh
 		this.registerEvent(
-			this.app.vault.on('modify', () => {
+			this.app.vault.on('modify', (file) => {
+				if (file instanceof TFile) {
+					// Clear the cache for the modified file
+					this.firstLineCache.delete(file.path);
+				}
 				const activeFile = this.app.workspace.getActiveFile();
 				if (this.shouldRefreshForFile(activeFile)) {
 					this.debouncedRefresh();
