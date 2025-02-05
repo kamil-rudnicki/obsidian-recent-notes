@@ -40,6 +40,7 @@ class RecentNotesView extends ItemView {
 	private firstLineCache: Map<string, { line: string, timestamp: number }> = new Map();
 	private readonly MAX_FILE_SIZE_FOR_PREVIEW = 100 * 1024; // 100 KB
 	private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+	private lastEditedFile: string | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: RecentNotesPlugin) {
 		super(leaf);
@@ -262,7 +263,7 @@ class RecentNotesView extends ItemView {
 
 		let currentSection = '';
 		const activeFile = this.app.workspace.getActiveFile();
-		const wasActiveFileAtTop = activeFile && files[0]?.path === activeFile.path;
+		const wasEditedFileMovedToTop = this.lastEditedFile && files[0]?.path === this.lastEditedFile;
 		const isTopFilePinned = files[0] && this.plugin.settings.pinnedNotes.includes(files[0].path);
 		if (activeFile) {
 			this.lastActiveFile = activeFile.path;
@@ -378,11 +379,13 @@ class RecentNotesView extends ItemView {
 		}
 
 		// After all files are rendered, handle scrolling
-		if (wasActiveFileAtTop && !isTopFilePinned) {
+		if (wasEditedFileMovedToTop && !isTopFilePinned) {
 			this.scrollToTodaySection();
 		} else {
 			container.scrollTop = scrollTop;
 		}
+		// Reset the last edited file after handling the scroll
+		this.lastEditedFile = null;
 	}
 
 	private addFileItemEventListeners(fileContainer: HTMLElement, file: TFile) {
@@ -460,6 +463,8 @@ class RecentNotesView extends ItemView {
 				if (file instanceof TFile) {
 					// Clear the cache for the modified file
 					this.firstLineCache.delete(file.path);
+					// Track the last edited file
+					this.lastEditedFile = file.path;
 				}
 				const activeFile = this.app.workspace.getActiveFile();
 				if (this.shouldRefreshForFile(activeFile)) {
