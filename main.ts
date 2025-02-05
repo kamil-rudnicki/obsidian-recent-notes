@@ -300,13 +300,18 @@ class RecentNotesView extends ItemView {
 				cls: hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
 			});
 
-			fileContainer.addEventListener('click', async (event: MouseEvent) => {
+			fileContainer.addEventListener('mousedown', async (event: MouseEvent) => {
+				// Only respond to left-click
+				if (event.button !== 0) return;
+				event.preventDefault();
+				event.stopPropagation();
+
 				const leaf = this.app.workspace.getLeaf(
 					// Create new leaf if CMD/CTRL is pressed
 					event.metaKey || event.ctrlKey
 				);
 				await leaf.openFile(file);
-
+				
 				// For non-markdown files, give them a moment to become active
 				if (file.extension !== 'md') {
 					setTimeout(() => {
