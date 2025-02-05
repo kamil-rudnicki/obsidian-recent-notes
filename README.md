@@ -16,7 +16,7 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 
 - For each note displays:
   - Note title
-  - First line of content
+  - First lines of content
   - Last edit time/date
 
 ## How to Use
