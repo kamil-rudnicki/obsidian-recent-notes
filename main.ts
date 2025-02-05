@@ -234,8 +234,20 @@ class RecentNotesView extends ItemView {
 		return date.format('YYYY');
 	}
 
+	private scrollToTodaySection() {
+		const container = this.containerEl.children[1];
+		const sections = Array.from(container.querySelectorAll('h6'));
+		for (const section of sections) {
+			if (section.textContent === 'Today') {
+				section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				break;
+			}
+		}
+	}
+
 	async refreshView() {
 		const container = this.containerEl.children[1];
+		const scrollTop = container.scrollTop;
 		container.empty();
 		
 		const files = this.app.vault.getFiles()
@@ -250,6 +262,8 @@ class RecentNotesView extends ItemView {
 
 		let currentSection = '';
 		const activeFile = this.app.workspace.getActiveFile();
+		const wasActiveFileAtTop = activeFile && files[0]?.path === activeFile.path;
+		const isTopFilePinned = files[0] && this.plugin.settings.pinnedNotes.includes(files[0].path);
 		if (activeFile) {
 			this.lastActiveFile = activeFile.path;
 		}
@@ -361,6 +375,13 @@ class RecentNotesView extends ItemView {
 			});
 
 			this.addFileItemEventListeners(fileContainer, file);
+		}
+
+		// After all files are rendered, handle scrolling
+		if (wasActiveFileAtTop && !isTopFilePinned) {
+			this.scrollToTodaySection();
+		} else {
+			container.scrollTop = scrollTop;
 		}
 	}
 
