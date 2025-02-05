@@ -13,6 +13,7 @@ interface RecentNotesSettings {
 	excludedFolders: string[];
 	excludedFiles: string[];
 	previewLines: number;
+	pinnedNotes: string[];
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -26,7 +27,8 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	showCSVFiles: true,
 	excludedFolders: [],
 	excludedFiles: [],
-	previewLines: 1
+	previewLines: 1,
+	pinnedNotes: []
 }
 
 const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
@@ -241,14 +243,72 @@ class RecentNotesView extends ItemView {
 			.sort((a, b) => b.stat.mtime - a.stat.mtime)
 			.slice(0, this.plugin.settings.maxNotesToShow);
 
+		// Get pinned files that still exist
+		const pinnedFiles = files.filter(file => this.plugin.settings.pinnedNotes.includes(file.path));
+		// Get unpinned files
+		const unpinnedFiles = files.filter(file => !this.plugin.settings.pinnedNotes.includes(file.path));
+
 		let currentSection = '';
 		const activeFile = this.app.workspace.getActiveFile();
 		if (activeFile) {
 			this.lastActiveFile = activeFile.path;
 		}
 		const activeFilePath = activeFile ? activeFile.path : this.lastActiveFile;
+
+		// Show pinned files first if any exist
+		if (pinnedFiles.length > 0) {
+			container.createEl('h6', { text: 'Pinned' });
+			for (const file of pinnedFiles) {
+				const fileContainer = container.createEl('div', { 
+					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
+				});
+
+				const titleEl = fileContainer.createEl('div', { 
+					text: file.basename,
+					cls: 'recent-note-title'
+				});
+
+				const hasMultipleLines = this.plugin.settings.previewLines > 1;
+				const infoContainer = fileContainer.createEl('div', { 
+					cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+				});
+				
+				const now = moment();
+				let dateText;
+				if (this.getTimeSection(moment(file.stat.mtime)) === 'Today') {
+					dateText = moment(file.stat.mtime).format('HH:mm');
+				} else if (this.getTimeSection(moment(file.stat.mtime)) === 'Yesterday') {
+					dateText = moment(file.stat.mtime).format('HH:mm');
+				} else if (moment(file.stat.mtime).isAfter(now.subtract(7, 'days'))) {
+					dateText = moment(file.stat.mtime).format('dddd');
+				} else {
+					dateText = moment(file.stat.mtime).format('DD/MM/YYYY');
+				}
+
+				const firstLine = await this.getFirstLineOfFile(file);
+				const previewContainer = infoContainer.createEl('div', {
+					cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+				});
+				
+				firstLine.split('\n').forEach(line => {
+					previewContainer.createEl('div', {
+						text: line,
+						cls: 'recent-note-preview-line'
+					});
+				});
+
+				const dateEl = infoContainer.createEl('span', {
+					text: dateText,
+					cls: hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
+				});
+
+				this.addFileItemEventListeners(fileContainer, file);
+			}
+			currentSection = ''; // Reset section for unpinned files
+		}
 		
-		for (const file of files) {
+		// Show unpinned files grouped by date
+		for (const file of unpinnedFiles) {
 			const fileDate = moment(file.stat.mtime);
 			const section = this.getTimeSection(fileDate);
 			
@@ -260,6 +320,7 @@ class RecentNotesView extends ItemView {
 			const fileContainer = container.createEl('div', { 
 				cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 			});
+
 			const titleEl = fileContainer.createEl('div', { 
 				text: file.basename,
 				cls: 'recent-note-title'
@@ -272,9 +333,9 @@ class RecentNotesView extends ItemView {
 			
 			const now = moment();
 			let dateText;
-			if (section === 'Today') {
+			if (this.getTimeSection(moment(file.stat.mtime)) === 'Today') {
 				dateText = moment(file.stat.mtime).format('HH:mm');
-			} else if (section === 'Yesterday') {
+			} else if (this.getTimeSection(moment(file.stat.mtime)) === 'Yesterday') {
 				dateText = moment(file.stat.mtime).format('HH:mm');
 			} else if (moment(file.stat.mtime).isAfter(now.subtract(7, 'days'))) {
 				dateText = moment(file.stat.mtime).format('dddd');
@@ -294,61 +355,77 @@ class RecentNotesView extends ItemView {
 				});
 			});
 
-			// Add date after preview if multiple lines are shown
 			const dateEl = infoContainer.createEl('span', {
 				text: dateText,
 				cls: hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
 			});
 
-			fileContainer.addEventListener('mousedown', async (event: MouseEvent) => {
-				// Only respond to left-click
-				if (event.button !== 0) return;
-				event.preventDefault();
-				event.stopPropagation();
-
-				const leaf = this.app.workspace.getLeaf(
-					// Create new leaf if CMD/CTRL is pressed
-					event.metaKey || event.ctrlKey
-				);
-				await leaf.openFile(file);
-				
-				// For non-markdown files, give them a moment to become active
-				if (file.extension !== 'md') {
-					setTimeout(() => {
-						this.debouncedRefresh();
-					}, 50);
-				}
-			});
-
-			// Add context menu handler
-			fileContainer.addEventListener('contextmenu', (event: MouseEvent) => {
-				event.preventDefault();
-				const menu = new Menu();
-
-				// Add delete option at the top
-				menu.addItem((item) => {
-					item
-						.setIcon('trash')
-						.setTitle('Delete')
-						.onClick(async () => {
-							const exists = await this.app.vault.adapter.exists(file.path);
-							if (!exists) return;
-							
-							const confirmation = confirm(`Are you sure you want to delete "${file.path}"?`);
-							if (!confirmation) return;
-							
-							await this.app.fileManager.trashFile(file);
-							this.refreshView();
-						});
-				});
-
-				menu.addSeparator();
-
-				// Show standard file menu
-				this.app.workspace.trigger('file-menu', menu, file, 'recent-notes-view', null);
-				menu.showAtPosition({ x: event.clientX, y: event.clientY });
-			});
+			this.addFileItemEventListeners(fileContainer, file);
 		}
+	}
+
+	private addFileItemEventListeners(fileContainer: HTMLElement, file: TFile) {
+		fileContainer.addEventListener('mousedown', async (event: MouseEvent) => {
+			if (event.button !== 0) return;
+			event.preventDefault();
+			event.stopPropagation();
+
+			const leaf = this.app.workspace.getLeaf(
+				event.metaKey || event.ctrlKey
+			);
+			await leaf.openFile(file);
+			
+			if (file.extension !== 'md') {
+				setTimeout(() => {
+					this.debouncedRefresh();
+				}, 50);
+			}
+		});
+
+		fileContainer.addEventListener('contextmenu', (event: MouseEvent) => {
+			event.preventDefault();
+			const menu = new Menu();
+
+			// Add pin/unpin option
+			const isPinned = this.plugin.settings.pinnedNotes.includes(file.path);
+			menu.addItem((item) => {
+				item
+					.setIcon(isPinned ? 'pin-off' : 'pin')
+					.setTitle(isPinned ? 'Unpin' : 'Pin')
+					.onClick(async () => {
+						if (isPinned) {
+							this.plugin.settings.pinnedNotes = this.plugin.settings.pinnedNotes.filter(path => path !== file.path);
+						} else {
+							this.plugin.settings.pinnedNotes.push(file.path);
+						}
+						await this.plugin.saveSettings();
+						this.refreshView();
+					});
+			});
+
+			// Add delete option
+			menu.addItem((item) => {
+				item
+					.setIcon('trash')
+					.setTitle('Delete')
+					.onClick(async () => {
+						const exists = await this.app.vault.adapter.exists(file.path);
+						if (!exists) return;
+						
+						const confirmation = confirm(`Are you sure you want to delete "${file.path}"?`);
+						if (!confirmation) return;
+						
+						await this.app.fileManager.trashFile(file);
+						this.refreshView();
+					});
+			});
+
+			menu.addSeparator();
+
+			// Show standard file menu
+			this.app.workspace.trigger('file-menu', menu, file, 'recent-notes-view', null);
+			menu.showAtPosition({ x: event.clientX, y: event.clientY });
+		});
 	}
 
 	async onOpen() {
