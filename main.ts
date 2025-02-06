@@ -114,6 +114,38 @@ class RecentNotesView extends ItemView {
 		return 'clock-10';
 	}
 
+	private cleanMarkdownFormatting(text: string): string {
+		// Remove headers (#, ##, etc.)
+		text = text.replace(/^#+\s+/g, '');
+		
+		// Remove bold/italic markers
+		text = text.replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1');
+		
+		// Remove strikethrough
+		text = text.replace(/~~([^~]+)~~/g, '$1');
+		
+		// Remove horizontal rules
+		text = text.replace(/^[-*_]{3,}\s*$/g, '');
+		
+		// Remove link formatting but keep text
+		text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+		
+		// Remove all backticks (including standalone)
+		text = text.replace(/`+/g, '');
+		
+		// Remove blockquotes
+		text = text.replace(/^>\s+/g, '');
+		
+		// Remove task list markers
+		text = text.replace(/^- \[[x ]\]\s+/i, '');
+		
+		// Remove list markers
+		text = text.replace(/^[-*+]\s+/g, '');
+		text = text.replace(/^\d+\.\s+/g, '');
+		
+		return text.trim();
+	}
+
 	async getFirstLineOfFile(file: TFile): Promise<string> {
 		const ext = file.extension.toLowerCase();
 		
@@ -202,8 +234,11 @@ class RecentNotesView extends ItemView {
 			let previewLines: string[] = [];
 			for (let i = startIndex; i < lines.length && previewLines.length < this.plugin.settings.previewLines; i++) {
 				const line = lines[i]?.trim();
-				if (line && line !== '---' && !line.startsWith('# ')) {
-					previewLines.push(line);
+				if (line && line !== '---') {
+					const cleanedLine = this.cleanMarkdownFormatting(line);
+					if (cleanedLine) {
+						previewLines.push(cleanedLine);
+					}
 				}
 			}
 			

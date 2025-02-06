@@ -53,7 +53,7 @@
 .recent-note-preview {
     flex: 1 1 auto;
     min-width: 0;
-    opacity: 0.6;
+    opacity: 0.7;
     order: 1;
 }
 
