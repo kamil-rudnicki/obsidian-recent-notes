@@ -240,7 +240,10 @@ class RecentNotesView extends ItemView {
 		const sections = Array.from(container.querySelectorAll('h6'));
 		for (const section of sections) {
 			if (section.textContent === 'Today') {
-				section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				// Only scroll if current scroll position is more than 1700px
+				if (container.scrollTop > 300) {
+					section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
 				break;
 			}
 		}
