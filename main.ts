@@ -142,6 +142,10 @@ class RecentNotesView extends ItemView {
 		// Remove list markers
 		text = text.replace(/^[-*+]\s+/g, '');
 		text = text.replace(/^\d+\.\s+/g, '');
+
+		// Remove URLs and web addresses
+		text = text.replace(/https?:\/\//g, '');
+		text = text.replace(/www\./g, '');
 		
 		return text.trim();
 	}
