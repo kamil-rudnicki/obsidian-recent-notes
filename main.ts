@@ -478,11 +478,11 @@ class RecentNotesView extends ItemView {
 						const exists = await this.app.vault.adapter.exists(file.path);
 						if (!exists) return;
 						
-						const confirmation = confirm(`Are you sure you want to delete "${file.path}"?`);
-						if (!confirmation) return;
-						
-						await this.app.fileManager.trashFile(file);
-						this.refreshView();
+						const modal = new DeleteModal(this.app, file.path, async () => {
+							await this.app.fileManager.trashFile(file);
+							this.refreshView();
+						});
+						modal.open();
 					});
 			});
 
@@ -555,6 +555,48 @@ class RecentNotesView extends ItemView {
 		if (this.refreshTimeout) {
 			clearTimeout(this.refreshTimeout);
 		}
+	}
+}
+
+class DeleteModal extends Modal {
+	constructor(
+		app: App,
+		private readonly filename: string,
+		private readonly onConfirm: () => void
+	) {
+		super(app);
+	}
+
+	onOpen() {
+		const { contentEl, titleEl } = this;
+		titleEl.setText("Delete file");
+		contentEl
+			.createEl("p")
+			.setText(
+				`Are you sure you want to delete "${this.filename}"?`
+			);
+		const div = contentEl.createDiv({ cls: "modal-button-container" });
+
+		const deleteButton = div.createEl("button", {
+			cls: "mod-warning",
+			text: "Delete",
+		});
+		deleteButton.addEventListener("click", () => {
+			this.onConfirm();
+			this.close();
+		});
+
+		const cancelButton = div.createEl("button", {
+			text: "Cancel",
+		});
+		cancelButton.addEventListener("click", () => {
+			this.close();
+		});
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
 	}
 }
 

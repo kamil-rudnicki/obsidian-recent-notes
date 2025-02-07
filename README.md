@@ -53,11 +53,9 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 - Keyboard navigation
 - Open and focus on note in editor
 - Change notes with up down arrows
-- Pin notes
 - Animate when note is changing position
 - Animate new note
 - Real time updates on note change
-- Scrool to the top if note changes
 
 ## Support
 
