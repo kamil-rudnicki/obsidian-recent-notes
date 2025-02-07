@@ -16,7 +16,7 @@
     margin-bottom: 0px;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
 }
 .recent-note-date {
     color: var(--text-muted);
@@ -60,7 +60,7 @@
 /* Single line layout */
 .recent-note-preview-line {
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
     white-space: nowrap;
     line-height: 1.3;
 }
