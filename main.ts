@@ -41,11 +41,62 @@ class RecentNotesView extends ItemView {
 	private readonly MAX_FILE_SIZE_FOR_PREVIEW = 100 * 1024; // 100 KB
 	private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 	private lastEditedFile: string | null = null;
+	private currentFileIndex: number = -1;
 
 	constructor(leaf: WorkspaceLeaf, plugin: RecentNotesPlugin) {
 		super(leaf);
 		this.plugin = plugin;
 		this.containerEl.addClass('recent-notes-view');
+	}
+
+	public moveToAdjacentNote(direction: 'up' | 'down'): void {
+		const files = this.getRecentFiles();
+		if (files.length === 0) return;
+
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			// If no file is active, select the first or last file depending on direction
+			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
+			this.openFile(targetFile);
+			return;
+		}
+
+		// Find current file index
+		const currentIndex = files.findIndex(f => f.path === activeFile.path);
+		if (currentIndex === -1) {
+			// Current file not in list, select first or last file
+			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
+			this.openFile(targetFile);
+			return;
+		}
+
+		// Calculate next index
+		let nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+		
+		// Handle wrapping - only wrap when going down
+		if (nextIndex < 0) {
+			// When going up and at the first note, do nothing
+			return;
+		} else if (nextIndex >= files.length) {
+			nextIndex = 0;
+		}
+
+		this.openFile(files[nextIndex]);
+	}
+
+	private getRecentFiles(): TFile[] {
+		const files = this.app.vault.getFiles();
+		return files
+			.filter(file => this.shouldRefreshForFile(file))
+			.sort((a, b) => b.stat.mtime - a.stat.mtime)
+			.slice(0, this.plugin.settings.maxNotesToShow);
+	}
+
+	private async openFile(file: TFile): Promise<void> {
+		const leaf = this.app.workspace.getMostRecentLeaf();
+		if (leaf) {
+			await leaf.openFile(file);
+		}
 	}
 
 	private clearOldCache() {
@@ -624,6 +675,26 @@ export default class RecentNotesPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: 'move-to-previous-recent-note',
+			name: 'Move to previous note',
+			callback: () => {
+				if (this.view) {
+					this.view.moveToAdjacentNote('up');
+				}
+			},
+		});
+
+		this.addCommand({
+			id: 'move-to-next-recent-note',
+			name: 'Move to next note',
+			callback: () => {
+				if (this.view) {
+					this.view.moveToAdjacentNote('down');
+				}
+			},
+		});
+
 		this.addSettingTab(new RecentNotesSettingTab(this.app, this));
 	}
 
@@ -633,7 +704,7 @@ export default class RecentNotesPlugin extends Plugin {
 		let leaf: WorkspaceLeaf | null = workspace.getLeavesOfType(VIEW_TYPE_RECENT_NOTES)[0];
 		
 		if (!leaf) {
-			leaf = workspace.getRightLeaf(false);
+			leaf = workspace.getLeftLeaf(false);
 			if (leaf) {
 				await leaf.setViewState({
 					type: VIEW_TYPE_RECENT_NOTES,

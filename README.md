@@ -50,12 +50,8 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 ## Not Yet Implemented
 
 - Sticky headers that works with transcluent
-- Keyboard navigation
-- Open and focus on note in editor
-- Change notes with up down arrows
 - Animate when note is changing position
 - Animate new note
-- Real time updates on note change
 
 ## Support
 
