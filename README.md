@@ -6,14 +6,9 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 
 ## Features
 
-- Shows recently edited notes organized by time periods:
-  - Today (with timestamps)
-  - Yesterday (with timestamps)
-  - Last 7 days (grouped by day names)
-  - Last 30 days
-  - Current year (grouped by months)
-  - Previous years
-
+- Shows recently edited notes and files organized by time periods
+- Move between notes using keyboard shortcuts (NEW)
+- Pinned notes (NEW)
 - For each note displays:
   - Note title
   - First lines of content
