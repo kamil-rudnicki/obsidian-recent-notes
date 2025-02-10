@@ -499,6 +499,19 @@ class RecentNotesView extends ItemView {
 			}
 		});
 
+		// Add hover preview functionality
+		fileContainer.addEventListener('mouseover', (event: MouseEvent) => {
+			if (!file?.path) return;
+
+			this.app.workspace.trigger('hover-link', {
+				event,
+				source: VIEW_TYPE_RECENT_NOTES,
+				hoverParent: this.containerEl,
+				targetEl: fileContainer,
+				linktext: file.path,
+			});
+		});
+
 		fileContainer.addEventListener('contextmenu', (event: MouseEvent) => {
 			event.preventDefault();
 			const menu = new Menu();
