@@ -85,11 +85,21 @@ class RecentNotesView extends ItemView {
 	}
 
 	private getRecentFiles(): TFile[] {
-		const files = this.app.vault.getFiles();
-		return files
-			.filter(file => this.shouldRefreshForFile(file))
-			.sort((a, b) => b.stat.mtime - a.stat.mtime)
-			.slice(0, this.plugin.settings.maxNotesToShow);
+		const files = this.app.vault.getFiles()
+			.filter(file => this.shouldRefreshForFile(file));
+
+		// Get pinned files that still exist
+		const pinnedFiles = files
+			.filter(file => this.plugin.settings.pinnedNotes.includes(file.path))
+			.sort((a, b) => b.stat.mtime - a.stat.mtime);
+
+		// Get unpinned files
+		const unpinnedFiles = files
+			.filter(file => !this.plugin.settings.pinnedNotes.includes(file.path))
+			.sort((a, b) => b.stat.mtime - a.stat.mtime);
+
+		// Combine pinned and unpinned files
+		return [...pinnedFiles, ...unpinnedFiles].slice(0, this.plugin.settings.maxNotesToShow);
 	}
 
 	private async openFile(file: TFile): Promise<void> {
