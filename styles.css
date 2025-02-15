@@ -1,9 +1,56 @@
+/* @settings
+
+name: Recent Notes
+id: recent-notes
+settings:
+    - 
+        id: recent-notes-hover-color
+        title: Hover Color
+        description: Background color when hovering over notes
+        type: variable-themed-color
+        format: hex
+        opacity: true
+        default-light: '#E8E9EA'
+        default-dark: '#2D3034'
+    -
+        id: recent-notes-active-color
+        title: Active Note Color
+        description: Background color for the currently active note
+        type: variable-themed-color
+        format: hex
+        opacity: true
+        default-light: '#E8E9EA'
+        default-dark: '#2D3034'
+    -
+        id: recent-notes-active-text-color
+        title: Active Note Text Color
+        description: Text color for the currently active note
+        type: variable-themed-color
+        format: hex
+        opacity: true
+        default-light: '#E8E9EA'
+        default-dark: '#2D3034'
+    -
+        id: recent-notes-hover-text-color
+        title: Hovered Note Text Color
+        description: Text color for hovered notes
+        type: variable-themed-color
+        format: hex
+        opacity: true
+        default-light: '#E8E9EA'
+        default-dark: '#2D3034'
+*/
+
+/* Apply default theme variables if custom ones are not set */
+body {
+    --recent-notes-item-background-hover: transparent;
+}
+
 .recent-note-item {
     padding: 10px 18px;
     margin: 1px 0px 0px 0px;
     cursor: pointer;
     border-radius: 4px;
-    transition: background-color 0.2s ease;
 }
 .recent-notes-view .view-content {
     height: 100%;
@@ -78,5 +125,21 @@
 
 /* Active State */
 .recent-note-item.is-active {
-    background-color: var(--nav-item-background-active);
+    background-color: var(--recent-notes-active-color, var(--nav-item-background-active));
+    color: var(--recent-notes-active-text-color);
+}
+.recent-note-item.is-active .recent-note-date,
+.recent-note-item.is-active .recent-note-info {
+    color: var(--recent-notes-active-text-color, var(--text-muted));
+}
+
+.recent-note-item:hover:not(.is-active) {
+    background-color: var(--recent-notes-hover-color, var(--recent-notes-item-background-hover));
+    color: var(--recent-notes-hover-text-color);
+}
+.recent-note-item:hover:not(.is-active) .recent-note-date {
+    color: var(--recent-notes-hover-text-color, var(--text-muted));
+}
+.recent-note-item:hover:not(.is-active) .recent-note-info {
+    color: var(--recent-notes-hover-text-color, var(--text-muted));
 }

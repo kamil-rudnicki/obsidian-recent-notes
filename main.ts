@@ -686,6 +686,9 @@ export default class RecentNotesPlugin extends Plugin {
 			(leaf) => (this.view = new RecentNotesView(leaf, this))
 		);
 
+		// Trigger Style Settings plugin to parse our settings
+		this.app.workspace.trigger('parse-style-settings');
+
 		this.addRibbonIcon('clock-10', 'Recent notes', () => {
 			this.activateView();
 		});
