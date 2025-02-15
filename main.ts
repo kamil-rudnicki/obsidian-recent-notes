@@ -31,6 +31,57 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	pinnedNotes: []
 }
 
+// Insert localization translations
+const LOCALES: Record<string, Record<string, string>> = {
+	en: {
+		recentNotes: "Recent notes",
+		pinned: "Pinned",
+		deleteFile: "Delete file",
+		areYouSureDelete: 'Are you sure you want to delete "{filename}"?',
+		delete: "Delete",
+		cancel: "Cancel",
+		open: "Open",
+		moveToPrevious: "Move to previous note",
+		moveToNext: "Move to next note",
+		today: "Today",
+		yesterday: "Yesterday",
+		previous7days: "Previous 7 days",
+		previous30days: "Previous 30 days"
+	},
+	pl: {
+		recentNotes: "Ostatnie notatki",
+		pinned: "Przypięte",
+		deleteFile: "Usuń plik",
+		areYouSureDelete: 'Czy na pewno chcesz usunąć "{filename}"?',
+		delete: "Usuń",
+		cancel: "Anuluj",
+		open: "Otwórz",
+		moveToPrevious: "Przejdź do poprzedniej notatki",
+		moveToNext: "Przejdź do następnej notatki",
+		today: "Dzisiaj",
+		yesterday: "Wczoraj",
+		previous7days: "Ostatnie 7 dni",
+		previous30days: "Ostatnie 30 dni"
+	}
+};
+
+// Helper functions to get current locale and translate keys
+const getObsidianLanguage = (): string => {
+	return localStorage.getItem('language')?.toLowerCase() || 'en';
+};
+
+function getLocale(app: App): string {
+	return getObsidianLanguage();
+}
+
+function translateGlobal(app: App, key: string): string {
+	const lang = getLocale(app);
+	if (LOCALES[lang] && LOCALES[lang][key]) {
+		return LOCALES[lang][key];
+	}
+	return LOCALES['en'][key];
+}
+
 const VIEW_TYPE_RECENT_NOTES = "recent-notes-view";
 
 class RecentNotesView extends ItemView {
@@ -168,7 +219,7 @@ class RecentNotesView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Recent notes";
+		return this.plugin.translate("recentNotes");
 	}
 
 	public getIcon(): string {
@@ -322,16 +373,16 @@ class RecentNotesView extends ItemView {
 
 	getTimeSection(date: moment.Moment): string {
 		const now = moment();
-		if (date.isSame(now, 'day')) return 'Today';
-		if (date.isSame(now.subtract(1, 'day'), 'day')) return 'Yesterday';
-		if (date.isAfter(now.subtract(7, 'days'))) return 'Previous 7 days';
-		if (date.isAfter(now.subtract(30, 'days'))) return 'Previous 30 days';
+		if (date.isSame(now, 'day')) return this.plugin.translate('today');
+		if (date.isSame(now.clone().subtract(1, 'day'), 'day')) return this.plugin.translate('yesterday');
+		if (date.isAfter(now.clone().subtract(7, 'days'))) return this.plugin.translate('previous7days');
+		if (date.isAfter(now.clone().subtract(30, 'days'))) return this.plugin.translate('previous30days');
 		
-		// For dates in current year, show month name
+		// For dates in current year, show month name with the first letter uppercase
 		if (date.isSame(now, 'year')) {
-			return date.format('MMMM');
+			let monthName = date.format('MMMM');
+			return monthName.charAt(0).toUpperCase() + monthName.slice(1);
 		}
-		// For previous years, show year only
 		return date.format('YYYY');
 	}
 
@@ -375,7 +426,7 @@ class RecentNotesView extends ItemView {
 
 		// Show pinned files first if any exist
 		if (pinnedFiles.length > 0) {
-			container.createEl('h6', { text: 'Pinned' });
+			container.createEl('h6', { text: this.plugin.translate('pinned') });
 			for (const file of pinnedFiles) {
 				const fileContainer = container.createEl('div', { 
 					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
@@ -393,11 +444,9 @@ class RecentNotesView extends ItemView {
 				
 				const now = moment();
 				let dateText;
-				if (this.getTimeSection(moment(file.stat.mtime)) === 'Today') {
+				if (moment(file.stat.mtime).isSame(now, 'day') || moment(file.stat.mtime).isSame(now.clone().subtract(1, 'day'), 'day')) {
 					dateText = moment(file.stat.mtime).format('HH:mm');
-				} else if (this.getTimeSection(moment(file.stat.mtime)) === 'Yesterday') {
-					dateText = moment(file.stat.mtime).format('HH:mm');
-				} else if (moment(file.stat.mtime).isAfter(now.subtract(7, 'days'))) {
+				} else if (moment(file.stat.mtime).isAfter(now.clone().subtract(7, 'days'))) {
 					dateText = moment(file.stat.mtime).format('dddd');
 				} else {
 					dateText = moment(file.stat.mtime).format('DD/MM/YYYY');
@@ -451,11 +500,9 @@ class RecentNotesView extends ItemView {
 			
 			const now = moment();
 			let dateText;
-			if (this.getTimeSection(moment(file.stat.mtime)) === 'Today') {
+			if (moment(file.stat.mtime).isSame(now, 'day') || moment(file.stat.mtime).isSame(now.clone().subtract(1, 'day'), 'day')) {
 				dateText = moment(file.stat.mtime).format('HH:mm');
-			} else if (this.getTimeSection(moment(file.stat.mtime)) === 'Yesterday') {
-				dateText = moment(file.stat.mtime).format('HH:mm');
-			} else if (moment(file.stat.mtime).isAfter(now.subtract(7, 'days'))) {
+			} else if (moment(file.stat.mtime).isAfter(now.clone().subtract(7, 'days'))) {
 				dateText = moment(file.stat.mtime).format('dddd');
 			} else {
 				dateText = moment(file.stat.mtime).format('DD/MM/YYYY');
@@ -643,17 +690,15 @@ class DeleteModal extends Modal {
 
 	onOpen() {
 		const { contentEl, titleEl } = this;
-		titleEl.setText("Delete file");
+		titleEl.setText(translateGlobal(this.app, 'deleteFile'));
 		contentEl
 			.createEl("p")
-			.setText(
-				`Are you sure you want to delete "${this.filename}"?`
-			);
+			.setText(translateGlobal(this.app, 'areYouSureDelete').replace('{filename}', this.filename));
 		const div = contentEl.createDiv({ cls: "modal-button-container" });
 
 		const deleteButton = div.createEl("button", {
 			cls: "mod-warning",
-			text: "Delete",
+			text: translateGlobal(this.app, 'delete'),
 		});
 		deleteButton.addEventListener("click", () => {
 			this.onConfirm();
@@ -661,7 +706,7 @@ class DeleteModal extends Modal {
 		});
 
 		const cancelButton = div.createEl("button", {
-			text: "Cancel",
+			text: translateGlobal(this.app, 'cancel'),
 		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
@@ -689,13 +734,13 @@ export default class RecentNotesPlugin extends Plugin {
 		// Trigger Style Settings plugin to parse our settings
 		this.app.workspace.trigger('parse-style-settings');
 
-		this.addRibbonIcon('clock-10', 'Recent notes', () => {
+		this.addRibbonIcon('clock-10', this.translate('recentNotes'), () => {
 			this.activateView();
 		});
 
 		this.addCommand({
 			id: 'show-recent-notes',
-			name: 'Open',
+			name: this.translate('open'),
 			callback: () => {
 				this.activateView();
 			},
@@ -703,7 +748,7 @@ export default class RecentNotesPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'move-to-previous-recent-note',
-			name: 'Move to previous note',
+			name: this.translate('moveToPrevious'),
 			callback: () => {
 				if (this.view) {
 					this.view.moveToAdjacentNote('up');
@@ -713,7 +758,7 @@ export default class RecentNotesPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'move-to-next-recent-note',
-			name: 'Move to next note',
+			name: this.translate('moveToNext'),
 			callback: () => {
 				if (this.view) {
 					this.view.moveToAdjacentNote('down');
@@ -750,6 +795,11 @@ export default class RecentNotesPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	// New translate method using the global translate function
+	translate(key: string): string {
+		return translateGlobal(this.app, key);
 	}
 }
 
