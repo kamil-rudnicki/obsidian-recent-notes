@@ -14,6 +14,7 @@ interface RecentNotesSettings {
 	excludedFiles: string[];
 	previewLines: number;
 	pinnedNotes: string[];
+	dateFormat: string;
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -28,7 +29,8 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	excludedFolders: [],
 	excludedFiles: [],
 	previewLines: 1,
-	pinnedNotes: []
+	pinnedNotes: [],
+	dateFormat: 'DD/MM/YYYY'
 }
 
 // Insert localization translations
@@ -449,7 +451,7 @@ class RecentNotesView extends ItemView {
 				} else if (moment(file.stat.mtime).isAfter(now.clone().subtract(7, 'days'))) {
 					dateText = moment(file.stat.mtime).format('dddd');
 				} else {
-					dateText = moment(file.stat.mtime).format('DD/MM/YYYY');
+					dateText = moment(file.stat.mtime).format(this.plugin.settings.dateFormat);
 				}
 
 				const firstLine = await this.getFirstLineOfFile(file);
@@ -505,7 +507,7 @@ class RecentNotesView extends ItemView {
 			} else if (moment(file.stat.mtime).isAfter(now.clone().subtract(7, 'days'))) {
 				dateText = moment(file.stat.mtime).format('dddd');
 			} else {
-				dateText = moment(file.stat.mtime).format('DD/MM/YYYY');
+				dateText = moment(file.stat.mtime).format(this.plugin.settings.dateFormat);
 			}
 
 			const firstLine = await this.getFirstLineOfFile(file);
@@ -814,6 +816,28 @@ class RecentNotesSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+
+		new Setting(containerEl)
+			.setName('Date format')
+			.setDesc('Format for displaying dates older than 7 days')
+			.addDropdown(dropdown => dropdown
+				.addOption('DD/MM/YYYY', '19/08/2025')
+				.addOption('M/D/YY', '8/19/25')
+				.addOption('D/M/YY', '19/8/25')
+				.addOption('M/D/YYYY', '8/19/2025')
+				.addOption('DD.MM.YYYY', '19.08.2025')
+				.addOption('DD-MM-YYYY', '19-08-2025')
+				.addOption('YYYY/M/D', '2025/8/19')
+				.addOption('YYYY.MM.DD', '2025.08.19')
+				.addOption('YYYY-MM-DD', '2025-08-19')
+				.setValue(this.plugin.settings.dateFormat)
+				.onChange(async (value) => {
+					this.plugin.settings.dateFormat = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
 
 		new Setting(containerEl)
 			.setName('Maximum notes to show')

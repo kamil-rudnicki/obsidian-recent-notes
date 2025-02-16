@@ -7,8 +7,10 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 ## Features
 
 - Shows recently edited notes and files organized by time periods
-- Move between notes using keyboard shortcuts (NEW)
-- Pinned notes (NEW)
+- Move between notes using keyboard shortcuts
+- Pinned notes
+- Ability to change styles using Style Settings plugin
+- Translations
 - For each note displays:
   - Note title
   - First lines of content
