@@ -15,6 +15,7 @@ interface RecentNotesSettings {
 	previewLines: number;
 	pinnedNotes: string[];
 	dateFormat: string;
+	propertyModified: string;
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -30,7 +31,8 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	excludedFiles: [],
 	previewLines: 1,
 	pinnedNotes: [],
-	dateFormat: 'DD/MM/YYYY'
+	dateFormat: 'DD/MM/YYYY',
+	propertyModified: '',
 }
 
 // Insert localization translations
@@ -287,6 +289,28 @@ class RecentNotesView extends ItemView {
 		this.openFile(files[nextIndex]);
 	}
 
+	private static fileModifiedTimes = new Map<TFile, number>(); // UNIX timestamp, in milliseconds
+
+	private getModifiedTime(file:TFile, shouldRenew:boolean=false): number {
+		if (!shouldRenew && RecentNotesView.fileModifiedTimes.has(file)) {
+			return RecentNotesView.fileModifiedTimes.get(file);
+		}
+		RecentNotesView.fileModifiedTimes.set(file, file.stat.mtime);
+
+		if (this.plugin.settings.propertyModified) {
+			// const metadataCache: MetadataCache = this.app.metadataCache;
+			const fileMetadata = this.app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(file.path));
+			if (fileMetadata && fileMetadata.frontmatter) {
+				const fileDateProperty = new Date(fileMetadata.frontmatter[this.plugin.settings.propertyModified]).getTime();
+				if (fileDateProperty) {
+					RecentNotesView.fileModifiedTimes.set(file, fileDateProperty);
+				}
+			}
+		}
+		// const epochMillis = new Date("2023-10-01T12:00:00Z").getTime();
+		return RecentNotesView.fileModifiedTimes.get(file);
+	}
+
 	private getRecentFiles(): TFile[] {
 		const files = this.app.vault.getFiles()
 			.filter(file => this.shouldRefreshForFile(file));
@@ -294,12 +318,12 @@ class RecentNotesView extends ItemView {
 		// Get pinned files that still exist
 		const pinnedFiles = files
 			.filter(file => this.plugin.settings.pinnedNotes.includes(file.path))
-			.sort((a, b) => b.stat.mtime - a.stat.mtime);
+			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true));
 
 		// Get unpinned files
 		const unpinnedFiles = files
 			.filter(file => !this.plugin.settings.pinnedNotes.includes(file.path))
-			.sort((a, b) => b.stat.mtime - a.stat.mtime);
+			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true));
 
 		// Combine pinned and unpinned files
 		return [...pinnedFiles, ...unpinnedFiles].slice(0, this.plugin.settings.maxNotesToShow);
@@ -559,7 +583,7 @@ class RecentNotesView extends ItemView {
 		
 		const files = this.app.vault.getFiles()
 			.filter(file => this.shouldRefreshForFile(file))
-			.sort((a, b) => b.stat.mtime - a.stat.mtime)
+			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true))
 			.slice(0, this.plugin.settings.maxNotesToShow);
 
 		// Get pinned files that still exist
@@ -596,12 +620,12 @@ class RecentNotesView extends ItemView {
 				
 				const now = moment();
 				let dateText;
-				if (moment(file.stat.mtime).isSame(now, 'day') || moment(file.stat.mtime).isSame(now.clone().subtract(1, 'day'), 'day')) {
-					dateText = moment(file.stat.mtime).format('HH:mm');
-				} else if (moment(file.stat.mtime).isAfter(now.clone().subtract(7, 'days'))) {
-					dateText = moment(file.stat.mtime).format('dddd');
+				if (moment(this.getModifiedTime(file,true)).isSame(now, 'day') || moment(this.getModifiedTime(file,true)).isSame(now.clone().subtract(1, 'day'), 'day')) {
+					dateText = moment(this.getModifiedTime(file)).format('HH:mm');
+				} else if (moment(this.getModifiedTime(file)).isAfter(now.clone().subtract(7, 'days'))) {
+					dateText = moment(this.getModifiedTime(file)).format('dddd');
 				} else {
-					dateText = moment(file.stat.mtime).format(this.plugin.settings.dateFormat);
+					dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
 				}
 
 				const firstLine = await this.getFirstLineOfFile(file);
@@ -628,7 +652,7 @@ class RecentNotesView extends ItemView {
 		
 		// Show unpinned files grouped by date
 		for (const file of unpinnedFiles) {
-			const fileDate = moment(file.stat.mtime);
+			const fileDate = moment(this.getModifiedTime(file,true));
 			const section = this.getTimeSection(fileDate);
 			
 			if (section !== currentSection) {
@@ -652,12 +676,12 @@ class RecentNotesView extends ItemView {
 			
 			const now = moment();
 			let dateText;
-			if (moment(file.stat.mtime).isSame(now, 'day') || moment(file.stat.mtime).isSame(now.clone().subtract(1, 'day'), 'day')) {
-				dateText = moment(file.stat.mtime).format('HH:mm');
-			} else if (moment(file.stat.mtime).isAfter(now.clone().subtract(7, 'days'))) {
-				dateText = moment(file.stat.mtime).format('dddd');
+			if (moment(this.getModifiedTime(file)).isSame(now, 'day') || moment(this.getModifiedTime(file)).isSame(now.clone().subtract(1, 'day'), 'day')) {
+				dateText = moment(this.getModifiedTime(file)).format('HH:mm');
+			} else if (moment(this.getModifiedTime(file)).isAfter(now.clone().subtract(7, 'days'))) {
+				dateText = moment(this.getModifiedTime(file)).format('dddd');
 			} else {
-				dateText = moment(file.stat.mtime).format(this.plugin.settings.dateFormat);
+				dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
 			}
 
 			const firstLine = await this.getFirstLineOfFile(file);
@@ -1058,6 +1082,20 @@ class RecentNotesSettingTab extends PluginSettingTab {
 					}
 				}));
 
+		new Setting(containerEl)
+			.setName('Custom Modified Date property')
+			.setDesc('Specify a frontmatter property to use for modification date (leave empty to use file modification date)')
+			.addText(text => text
+				.setPlaceholder('modified')
+				.setValue(this.plugin.settings.propertyModified.toString())
+				.onChange(async (value) => {
+					this.plugin.settings.propertyModified = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
 		containerEl.createEl('h3', { text: 'File types to show' });
 
 		new Setting(containerEl)
@@ -1152,4 +1190,3 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 	}
 }
-
