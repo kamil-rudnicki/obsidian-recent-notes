@@ -214,7 +214,23 @@ const LOCALES: Record<string, Record<string, string>> = {
 		yesterday: "Ontem",
 		previous7days: "Últimos 7 dias",
 		previous30days: "Últimos 30 dias"
+	},
+	hu: {
+		recentNotes: "Legutóbbi jegyzetek",
+		pinned: "Kitűzve",
+		deleteFile: "Fájl törlése",
+		areYouSureDelete: 'Biztos, hogy törölni akarod ezt: "{filename}"?',
+		delete: "Törlés",
+		cancel: "Mégsem",
+		open: "Megnyitás",
+		moveToPrevious: "Ugrás az előző jegyzetre",
+		moveToNext: "Ugrás az következő jegyzetre",
+		today: "Ma",
+		yesterday: "Tegnap",
+		previous7days: "Utolsó 7 nap",
+		previous30days: "Utolsó 30 nap"
 	}
+
 };
 
 // Helper functions to get current locale and translate keys
