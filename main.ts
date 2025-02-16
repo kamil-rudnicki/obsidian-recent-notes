@@ -157,18 +157,18 @@ const LOCALES: Record<string, Record<string, string>> = {
 	},
 	zh: {
 		recentNotes: "最近笔记",
-		pinned: "已固定",
+		pinned: "已置顶",
 		deleteFile: "删除文件",
 		areYouSureDelete: '确定要删除"{filename}"吗？',
 		delete: "删除",
 		cancel: "取消",
 		open: "打开",
-		moveToPrevious: "转到上一个笔记",
-		moveToNext: "转到下一个笔记",
+		moveToPrevious: "移至上一个笔记",
+		moveToNext: "移至下一个笔记",
 		today: "今天",
 		yesterday: "昨天",
-		previous7days: "过去7天",
-		previous30days: "过去30天"
+		previous7days: "最近7天",
+		previous30days: "最近30天"
 	},
 	ru: {
 		recentNotes: "Недавние заметки",
