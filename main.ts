@@ -298,7 +298,6 @@ class RecentNotesView extends ItemView {
 		RecentNotesView.fileModifiedTimes.set(file, file.stat.mtime);
 
 		if (this.plugin.settings.propertyModified) {
-			// const metadataCache: MetadataCache = this.app.metadataCache;
 			const fileMetadata = this.app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(file.path));
 			if (fileMetadata && fileMetadata.frontmatter) {
 				const fileDateProperty = new Date(fileMetadata.frontmatter[this.plugin.settings.propertyModified]).getTime();
@@ -307,7 +306,6 @@ class RecentNotesView extends ItemView {
 				}
 			}
 		}
-		// const epochMillis = new Date("2023-10-01T12:00:00Z").getTime();
 		return RecentNotesView.fileModifiedTimes.get(file);
 	}
 
