@@ -309,20 +309,25 @@ class RecentNotesView extends ItemView {
 
 	private getModifiedTime(file:TFile, shouldRenew:boolean=false): number {
 		if (!shouldRenew && RecentNotesView.fileModifiedTimes.has(file)) {
-			return RecentNotesView.fileModifiedTimes.get(file);
+			const time = RecentNotesView.fileModifiedTimes.get(file);
+			return time !== undefined ? time : file.stat.mtime;
 		}
 		RecentNotesView.fileModifiedTimes.set(file, file.stat.mtime);
 
 		if (this.plugin.settings.propertyModified) {
-			const fileMetadata = this.app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(file.path));
-			if (fileMetadata && fileMetadata.frontmatter) {
-				const fileDateProperty = new Date(fileMetadata.frontmatter[this.plugin.settings.propertyModified]).getTime();
-				if (fileDateProperty) {
-					RecentNotesView.fileModifiedTimes.set(file, fileDateProperty);
+			const abstractFile = this.app.vault.getAbstractFileByPath(file.path);
+			if (abstractFile instanceof TFile) {
+				const fileMetadata = this.app.metadataCache.getFileCache(abstractFile);
+				if (fileMetadata && fileMetadata.frontmatter) {
+					const fileDateProperty = new Date(fileMetadata.frontmatter[this.plugin.settings.propertyModified]).getTime();
+					if (fileDateProperty) {
+						RecentNotesView.fileModifiedTimes.set(file, fileDateProperty);
+					}
 				}
 			}
 		}
-		return RecentNotesView.fileModifiedTimes.get(file);
+		const time = RecentNotesView.fileModifiedTimes.get(file);
+		return time !== undefined ? time : file.stat.mtime;
 	}
 
 	private getRecentFiles(): TFile[] {
