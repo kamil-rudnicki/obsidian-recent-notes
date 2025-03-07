@@ -13,6 +13,7 @@ interface RecentNotesSettings {
 	excludedFolders: string[];
 	excludedFiles: string[];
 	previewLines: number;
+	showTime: boolean;
 	pinnedNotes: string[];
 	dateFormat: string;
 	propertyModified: string;
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	excludedFolders: [],
 	excludedFiles: [],
 	previewLines: 1,
+	showTime: true,
 	pinnedNotes: [],
 	dateFormat: 'DD/MM/YYYY',
 	propertyModified: '',
@@ -647,22 +649,28 @@ class RecentNotesView extends ItemView {
 					dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
 				}
 
-				const firstLine = await this.getFirstLineOfFile(file);
-				const previewContainer = infoContainer.createEl('div', {
-					cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
-				});
-				
-				firstLine.split('\n').forEach(line => {
-					previewContainer.createEl('div', {
-						text: line,
-						cls: 'recent-note-preview-line'
+				// Only show preview if previewLines > 0
+				if (this.plugin.settings.previewLines > 0) {
+					const firstLine = await this.getFirstLineOfFile(file);
+					const previewContainer = infoContainer.createEl('div', {
+						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
-				});
+					
+					firstLine.split('\n').forEach(line => {
+						previewContainer.createEl('div', {
+							text: line,
+							cls: 'recent-note-preview-line'
+						});
+					});
+				}
 
-				const dateEl = infoContainer.createEl('span', {
-					text: dateText,
-					cls: hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
-				});
+				// Only show date if showTime is enabled
+				if (this.plugin.settings.showTime) {
+					const dateEl = infoContainer.createEl('span', {
+						text: dateText,
+						cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
+					});
+				}
 
 				this.addFileItemEventListeners(fileContainer, file);
 			}
@@ -703,22 +711,28 @@ class RecentNotesView extends ItemView {
 				dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
 			}
 
-			const firstLine = await this.getFirstLineOfFile(file);
-			const previewContainer = infoContainer.createEl('div', {
-				cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
-			});
-			
-			firstLine.split('\n').forEach(line => {
-				previewContainer.createEl('div', {
-					text: line,
-					cls: 'recent-note-preview-line'
+			// Only show preview if previewLines > 0
+			if (this.plugin.settings.previewLines > 0) {
+				const firstLine = await this.getFirstLineOfFile(file);
+				const previewContainer = infoContainer.createEl('div', {
+					cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 				});
-			});
+				
+				firstLine.split('\n').forEach(line => {
+					previewContainer.createEl('div', {
+						text: line,
+						cls: 'recent-note-preview-line'
+					});
+				});
+			}
 
-			const dateEl = infoContainer.createEl('span', {
-				text: dateText,
-				cls: hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
-			});
+			// Only show date if showTime is enabled
+			if (this.plugin.settings.showTime) {
+				const dateEl = infoContainer.createEl('span', {
+					text: dateText,
+					cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
+				});
+			}
 
 			this.addFileItemEventListeners(fileContainer, file);
 		}
@@ -1067,8 +1081,9 @@ class RecentNotesSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Preview lines')
-			.setDesc('Number of text lines to show in the preview (1-3)')
+			.setDesc('Number of text lines to show in the preview (0-3)')
 			.addDropdown(dropdown => dropdown
+				.addOption('0', 'No preview')
 				.addOption('1', '1 line')
 				.addOption('2', '2 lines')
 				.addOption('3', '3 lines')
@@ -1079,6 +1094,19 @@ class RecentNotesSettingTab extends PluginSettingTab {
 					// Clear the entire cache when changing preview lines
 					if (this.plugin.view) {
 						this.plugin.view.clearCache();
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show time')
+			.setDesc('Show modification time next to files (set both this and Preview lines to 0 for minimal view)')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showTime)
+				.onChange(async (value) => {
+					this.plugin.settings.showTime = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
 					}
 				}));

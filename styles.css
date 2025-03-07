@@ -83,6 +83,17 @@ body {
     font-size: calc(var(--nav-item-size) * 0.9);
     min-height: 1.3em;
 }
+
+/* When no preview is shown, adjust date position */
+.recent-note-info:empty {
+    justify-content: flex-end;
+}
+
+/* When no preview and no time are shown, hide the info container */
+.recent-note-info:empty {
+    display: none;
+}
+
 .recent-notes-view h6 {
     top: -14px;
     padding: 6px 0px;
