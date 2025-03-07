@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult, Menu, FileView } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult, Menu, FileView, setIcon } from 'obsidian';
 import { moment } from 'obsidian';
 
 interface RecentNotesSettings {
@@ -623,7 +623,11 @@ class RecentNotesView extends ItemView {
 
 		// Show pinned files first if any exist
 		if (pinnedFiles.length > 0) {
-			container.createEl('h6', { text: this.plugin.translate('pinned') });
+			const pinnedHeader = container.createEl('h6');
+			const iconSpan = pinnedHeader.createSpan({ cls: 'pin-icon-small' });
+			setIcon(iconSpan, 'pin');
+			pinnedHeader.createSpan({ text: this.plugin.translate('pinned') });
+			
 			for (const file of pinnedFiles) {
 				const fileContainer = container.createEl('div', { 
 					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`

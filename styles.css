@@ -154,3 +154,11 @@ body {
 .recent-note-item:hover:not(.is-active) .recent-note-info {
     color: var(--recent-notes-hover-text-color, var(--text-muted));
 }
+
+/* Pin icon in Pinned header */
+.pin-icon-small {
+    --icon-size: 1.1em;
+    position: relative;
+    top: 2px;
+    margin-right: 4px;
+}
