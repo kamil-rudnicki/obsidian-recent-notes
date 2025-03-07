@@ -84,7 +84,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Hoy",
 		yesterday: "Ayer",
 		previous7days: "Últimos 7 días",
-		previous30days: "Últimos 30 días"
+		previous30days: "Últimos 30 días",
+		daysago: "días atrás"
 	},
 	fr: {
 		recentNotes: "Notes récentes",
@@ -99,7 +100,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Aujourd'hui",
 		yesterday: "Hier",
 		previous7days: "7 derniers jours",
-		previous30days: "30 derniers jours"
+		previous30days: "30 derniers jours",
+		daysago: "jours"
 	},
 	de: {
 		recentNotes: "Aktuelle Notizen",
@@ -114,7 +116,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Heute",
 		yesterday: "Gestern",
 		previous7days: "Letzte 7 Tage",
-		previous30days: "Letzte 30 Tage"
+		previous30days: "Letzte 30 Tage",
+		daysago: "Tage her"
 	},
 	it: {
 		recentNotes: "Note recenti",
@@ -129,7 +132,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Oggi",
 		yesterday: "Ieri",
 		previous7days: "Ultimi 7 giorni",
-		previous30days: "Ultimi 30 giorni"
+		previous30days: "Ultimi 30 giorni",
+		daysago: "giorni fa"
 	},
 	ja: {
 		recentNotes: "最近のノート",
@@ -144,7 +148,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "今日",
 		yesterday: "昨日",
 		previous7days: "過去7日間",
-		previous30days: "過去30日間"
+		previous30days: "過去30日間",
+		daysago: "日前"
 	},
 	ko: {
 		recentNotes: "최근 노트",
@@ -159,7 +164,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "오늘",
 		yesterday: "어제",
 		previous7days: "지난 7일",
-		previous30days: "지난 30일"
+		previous30days: "지난 30일",
+		daysago: "일 전"
 	},
 	zh: {
 		recentNotes: "最近笔记",
@@ -174,7 +180,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "今天",
 		yesterday: "昨天",
 		previous7days: "最近7天",
-		previous30days: "最近30天"
+		previous30days: "最近30天",
+		daysago: "天前"
 	},
 	ru: {
 		recentNotes: "Недавние заметки",
@@ -189,7 +196,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Сегодня",
 		yesterday: "Вчера",
 		previous7days: "Последние 7 дней",
-		previous30days: "Последние 30 дней"
+		previous30days: "Последние 30 дней",
+		daysago: "дней назад"
 	},
 	pt: {
 		recentNotes: "Notas recentes",
@@ -204,7 +212,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Hoje",
 		yesterday: "Ontem",
 		previous7days: "Últimos 7 dias",
-		previous30days: "Últimos 30 dias"
+		previous30days: "Últimos 30 dias",
+		daysago: "dias atrás"
 	},
 	"pt-br": {
 		recentNotes: "Notas recentes",
@@ -219,7 +228,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Hoje",
 		yesterday: "Ontem",
 		previous7days: "Últimos 7 dias",
-		previous30days: "Últimos 30 dias"
+		previous30days: "Últimos 30 dias",
+		daysago: "dias atrás"
 	},
 	hu: {
 		recentNotes: "Legutóbbi jegyzetek",
@@ -234,9 +244,9 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Ma",
 		yesterday: "Tegnap",
 		previous7days: "Utolsó 7 nap",
-		previous30days: "Utolsó 30 nap"
+		previous30days: "Utolsó 30 nap",
+		daysago: "napja"
 	}
-
 };
 
 // Helper functions to get current locale and translate keys

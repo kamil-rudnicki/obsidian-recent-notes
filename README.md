@@ -1,21 +1,33 @@
 # Recent Notes Plugin for Obsidian
 
-A plugin that shows your recently edited notes in a clean, organized timeline view, similar as Apple Notes. Perfect for keeping track of your latest work and quickly accessing recently modified notes.
+Transform how you navigate your notes with this elegant, timeline-based view of your recently edited files. Inspired by Apple Notes, Recent Notes creates a beautifully organized overview that makes tracking and accessing your latest work effortless.
 
 ![Recent Notes Plugin Screenshot](https://raw.githubusercontent.com/kamil-rudnicki/obsidian-recent-notes/master/resources/screenshots/sidebar.png)
 
-## Features
+## ✨ Features
 
-- Shows recently edited notes and files organized by time periods
-- Move between notes using keyboard shortcuts
-- Pinned notes
-- Ability to change styles using Style Settings plugin
-- Translations
-- For each note displays:
-  - Note title
-  - First lines of content
-  - Last edit time/date
-- Can use `title` from note properties instead of file name (NEW)
+- **Timeline Organization:** View your recently edited notes categorized by intuitive time periods (Today, Yesterday, This Week, etc.)
+- **Smart Filtering:** Choose which file types to include (Markdown, images, PDFs, audio, video, Canvas files, CSV)
+- **Customizable Display:**
+  - Adjust the number of notes displayed
+  - Customize date/time formats
+  - Control preview length
+- **Efficient Navigation:** 
+  - Move between notes using keyboard shortcuts
+  - Jump directly to today's section
+- **Workspace Management:**
+  - Pin important notes for quick access
+  - Exclude specific folders or files from the view 
+- **Performance Optimized:**
+  - Smart caching for better performance
+  - Handles large vaults with ease
+- **Tailored Experience:**
+  - Change appearance using Style Settings plugin
+  - Full translation support
+- **Rich Information:** For each note displays:
+  - Note title (can use `title` property instead of filename)
+  - First lines of content (cleaned of Markdown formatting)
+  - Last edit timestamp
 
 ## How to Use
 
@@ -24,10 +36,6 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 3. Click the clock icon in the ribbon (left sidebar) or use the command "Show Recent Notes" to open the view
 4. Click any note to open it
    - Click with CMD (Mac) or CTRL (Windows/Linux) to open in a new tab
-
-## Settings
-
-- **Maximum notes to show**: Adjust how many recent notes are displayed in the view (default: 100)
 
 ## Installation
 
@@ -44,12 +52,6 @@ A plugin that shows your recently edited notes in a clean, organized timeline vi
 2. Extract the files into your `.obsidian/plugins/obsidian-recent-notes` folder
 3. Reload Obsidian
 4. Enable the plugin in your settings
-
-## Not Yet Implemented
-
-- Sticky headers that works with transcluent
-- Animate when note is changing position
-- Animate new note
 
 ## Support
 
