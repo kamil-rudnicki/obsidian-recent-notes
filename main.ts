@@ -628,7 +628,7 @@ class RecentNotesView extends ItemView {
 				});
 
 				const titleEl = fileContainer.createEl('div', { 
-					text: file.basename,
+					text: this.getFileDisplayName(file),
 					cls: 'recent-note-title'
 				});
 
@@ -684,7 +684,7 @@ class RecentNotesView extends ItemView {
 			});
 
 			const titleEl = fileContainer.createEl('div', { 
-				text: file.basename,
+				text: this.getFileDisplayName(file),
 				cls: 'recent-note-title'
 			});
 
@@ -871,6 +871,22 @@ class RecentNotesView extends ItemView {
 		if (this.refreshTimeout) {
 			clearTimeout(this.refreshTimeout);
 		}
+	}
+
+	private getFileDisplayName(file: TFile): string {
+		// For non-markdown files, just return the basename
+		if (file.extension !== 'md') {
+			return file.basename;
+		}
+		
+		// For markdown files, check if there's a title in frontmatter
+		const fileMetadata = this.app.metadataCache.getFileCache(file);
+		if (fileMetadata && fileMetadata.frontmatter && fileMetadata.frontmatter.title) {
+			return fileMetadata.frontmatter.title;
+		}
+		
+		// Default to basename if no title in frontmatter
+		return file.basename;
 	}
 }
 
