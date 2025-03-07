@@ -52,7 +52,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		today: "Today",
 		yesterday: "Yesterday",
 		previous7days: "Previous 7 days",
-		previous30days: "Previous 30 days"
+		previous30days: "Previous 30 days",
+		daysago: "days ago"
 	},
 	pl: {
 		recentNotes: "Ostatnie notatki",
@@ -66,8 +67,9 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Przejdź do następnej notatki",
 		today: "Dzisiaj",
 		yesterday: "Wczoraj",
-		previous7days: "Ostatnie 7 dni",
-		previous30days: "Ostatnie 30 dni"
+		previous7days: "Poprzednie 7 dni",
+		previous30days: "Poprzednie 30 dni",
+		daysago: "dni temu"
 	},
 	es: {
 		recentNotes: "Notas recientes",
@@ -648,9 +650,21 @@ class RecentNotesView extends ItemView {
 				if (moment(this.getModifiedTime(file,true)).isSame(now, 'day') || moment(this.getModifiedTime(file,true)).isSame(now.clone().subtract(1, 'day'), 'day')) {
 					dateText = moment(this.getModifiedTime(file)).format('HH:mm');
 				} else if (moment(this.getModifiedTime(file)).isAfter(now.clone().subtract(7, 'days'))) {
-					dateText = moment(this.getModifiedTime(file)).format('dddd');
+					if (this.plugin.settings.dateFormat === 'RELATIVE') {
+						const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
+						dateText = daysAgo === 0 ? this.plugin.translate('today') : 
+							   daysAgo === 1 ? this.plugin.translate('yesterday') : 
+							   `${daysAgo} ${this.plugin.translate('daysago')}`;
+					} else {
+						dateText = moment(this.getModifiedTime(file)).format('dddd');
+					}
 				} else {
-					dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
+					if (this.plugin.settings.dateFormat === 'RELATIVE') {
+						const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
+						dateText = `${daysAgo} ${this.plugin.translate('daysago')}`;
+					} else {
+						dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
+					}
 				}
 
 				// Only show preview if previewLines > 0
@@ -707,12 +721,24 @@ class RecentNotesView extends ItemView {
 			
 			const now = moment();
 			let dateText;
-			if (moment(this.getModifiedTime(file)).isSame(now, 'day') || moment(this.getModifiedTime(file)).isSame(now.clone().subtract(1, 'day'), 'day')) {
+			if (moment(this.getModifiedTime(file,true)).isSame(now, 'day') || moment(this.getModifiedTime(file,true)).isSame(now.clone().subtract(1, 'day'), 'day')) {
 				dateText = moment(this.getModifiedTime(file)).format('HH:mm');
 			} else if (moment(this.getModifiedTime(file)).isAfter(now.clone().subtract(7, 'days'))) {
-				dateText = moment(this.getModifiedTime(file)).format('dddd');
+				if (this.plugin.settings.dateFormat === 'RELATIVE') {
+					const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
+					dateText = daysAgo === 0 ? this.plugin.translate('today') : 
+						   daysAgo === 1 ? this.plugin.translate('yesterday') : 
+						   `${daysAgo} ${this.plugin.translate('daysago')}`;
+				} else {
+					dateText = moment(this.getModifiedTime(file)).format('dddd');
+				}
 			} else {
-				dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
+				if (this.plugin.settings.dateFormat === 'RELATIVE') {
+					const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
+					dateText = `${daysAgo} ${this.plugin.translate('daysago')}`;
+				} else {
+					dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
+				}
 			}
 
 			// Only show preview if previewLines > 0
@@ -1048,6 +1074,7 @@ class RecentNotesSettingTab extends PluginSettingTab {
 			.setName('Date format')
 			.setDesc('Format for displaying dates older than 7 days')
 			.addDropdown(dropdown => dropdown
+				.addOption('RELATIVE', 'X days ago (relative)')
 				.addOption('DD/MM/YYYY', '19/08/2025')
 				.addOption('M/D/YY', '8/19/25')
 				.addOption('D/M/YY', '19/8/25')
