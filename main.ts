@@ -873,7 +873,136 @@ class RecentNotesView extends ItemView {
 	}
 
 	private addFileItemEventListeners(fileContainer: HTMLElement, file: TFile) {
+		// Track touch to differentiate between tap and long press
+		let touchStartTime = 0;
+		let isTouchDevice = false;
+		let fileJustOpened = false;
+		let lastTapTime = 0;
+		
+		// Create event handlers at the class level so they persist
+		const preventClickHandler = (e: Event) => {
+			e.preventDefault();
+			e.stopPropagation();
+		};
+		
+		const preventContextHandler = (e: Event) => {
+			e.preventDefault();
+			e.stopPropagation();
+		};
+		
+		// Helper function to block events after file open
+		const blockEventsTemporarily = () => {
+			// Remove any existing handlers first
+			window.removeEventListener('click', preventClickHandler, true);
+			window.removeEventListener('contextmenu', preventContextHandler, true);
+			
+			// Add the handlers
+			window.addEventListener('click', preventClickHandler, true);
+			window.addEventListener('contextmenu', preventContextHandler, true);
+			
+			// Set timeout to remove them after 1 second
+			setTimeout(() => {
+				window.removeEventListener('click', preventClickHandler, true);
+				window.removeEventListener('contextmenu', preventContextHandler, true);
+			}, 1000);
+		};
+		
+		// Touch start handler for mobile devices
+		fileContainer.addEventListener('touchstart', (event: TouchEvent) => {
+			isTouchDevice = true;
+			touchStartTime = Date.now();
+			
+			// Prevent any actions if we recently opened a file
+			if (Date.now() - lastTapTime < 1000) {
+				event.preventDefault();
+				event.stopPropagation();
+				return;
+			}
+		});
+		
+		// Touch end handler for mobile devices
+		fileContainer.addEventListener('touchend', async (event: TouchEvent) => {
+			const touchDuration = Date.now() - touchStartTime;
+			
+			// Prevent any actions if a file was just opened
+			if (Date.now() - lastTapTime < 1000) {
+				event.preventDefault();
+				event.stopPropagation();
+				return;
+			}
+			
+			// Only handle as a tap if touch was quick (less than 500ms)
+			if (touchDuration < 500) {
+				event.preventDefault();
+				event.stopPropagation();
+				
+				const leaf = this.app.workspace.getLeaf(false);
+				await leaf.openFile(file);
+				lastTapTime = Date.now(); // Record when we opened the file
+				
+				if (file.extension !== 'md') {
+					setTimeout(() => {
+						this.debouncedRefresh();
+					}, 50);
+				}
+				
+				// Block all clicks and context menus temporarily
+				blockEventsTemporarily();
+			} else {
+				// This was a long press, show context menu
+				event.preventDefault();
+				event.stopPropagation();
+				
+				const touch = event.changedTouches[0];
+				const menu = new Menu();
+				
+				// Add pin/unpin option
+				const isPinned = this.plugin.settings.pinnedNotes.includes(file.path);
+				menu.addItem((item) => {
+					item
+						.setIcon(isPinned ? 'pin-off' : 'pin')
+						.setTitle(isPinned ? 'Unpin' : 'Pin')
+						.onClick(async () => {
+							if (isPinned) {
+								this.plugin.settings.pinnedNotes = this.plugin.settings.pinnedNotes.filter(path => path !== file.path);
+							} else {
+								this.plugin.settings.pinnedNotes.push(file.path);
+							}
+							await this.plugin.saveSettings();
+							this.refreshView();
+						});
+				});
+				
+				// Add delete option
+				menu.addItem((item) => {
+					item
+						.setIcon('trash')
+						.setTitle('Delete')
+						.onClick(async () => {
+							const exists = await this.app.vault.adapter.exists(file.path);
+							if (!exists) return;
+							
+							const modal = new DeleteModal(this.app, file.path, async () => {
+								await this.app.fileManager.trashFile(file);
+								this.refreshView();
+							});
+							modal.open();
+						});
+				});
+				
+				menu.addSeparator();
+				
+				// Show standard file menu
+				this.app.workspace.trigger('file-menu', menu, file, 'recent-notes-view', null);
+				menu.showAtPosition({ x: touch.clientX, y: touch.clientY });
+			}
+		});
+
+		// Add mousedown for desktop devices
 		fileContainer.addEventListener('mousedown', async (event: MouseEvent) => {
+			// Skip on touch devices - we'll handle with touch events
+			if (isTouchDevice) return;
+			
 			if (event.button !== 0) return;
 			event.preventDefault();
 			event.stopPropagation();
@@ -904,6 +1033,14 @@ class RecentNotesView extends ItemView {
 		});
 
 		fileContainer.addEventListener('contextmenu', (event: MouseEvent) => {
+			// On touch devices, we'll only show context menu on long press,
+			// which is handled by the touchend event checking the duration
+			if (isTouchDevice || fileJustOpened || (Date.now() - lastTapTime < 1000)) {
+				event.preventDefault();
+				event.stopPropagation();
+				return;
+			}
+			
 			event.preventDefault();
 			const menu = new Menu();
 
