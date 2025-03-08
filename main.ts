@@ -876,8 +876,10 @@ class RecentNotesView extends ItemView {
 		// Track touch to differentiate between tap and long press
 		let touchStartTime = 0;
 		let isTouchDevice = false;
-		let fileJustOpened = false;
 		let lastTapTime = 0;
+		let touchStartY = 0;
+		let touchStartX = 0;
+		let isScrolling = false;
 		
 		// Create event handlers at the class level so they persist
 		const preventClickHandler = (e: Event) => {
@@ -909,27 +911,50 @@ class RecentNotesView extends ItemView {
 		
 		// Touch start handler for mobile devices
 		fileContainer.addEventListener('touchstart', (event: TouchEvent) => {
+			// Don't do anything if we recently opened a file
+			if (Date.now() - lastTapTime < 1000) {
+				return;
+			}
+			
 			isTouchDevice = true;
 			touchStartTime = Date.now();
 			
-			// Prevent any actions if we recently opened a file
-			if (Date.now() - lastTapTime < 1000) {
-				event.preventDefault();
-				event.stopPropagation();
-				return;
+			// Store initial touch position to detect scrolling
+			if (event.touches.length > 0) {
+				touchStartY = event.touches[0].clientY;
+				touchStartX = event.touches[0].clientX;
+			}
+			
+			isScrolling = false;
+		});
+		
+		// Track touch move to detect scrolling
+		fileContainer.addEventListener('touchmove', (event: TouchEvent) => {
+			// If it's a scroll gesture, mark it as scrolling
+			if (event.touches.length > 0) {
+				const yDiff = Math.abs(event.touches[0].clientY - touchStartY);
+				const xDiff = Math.abs(event.touches[0].clientX - touchStartX);
+				
+				// If the user has moved more than 10px, it's probably a scroll
+				if (yDiff > 10 || xDiff > 10) {
+					isScrolling = true;
+				}
 			}
 		});
 		
 		// Touch end handler for mobile devices
 		fileContainer.addEventListener('touchend', async (event: TouchEvent) => {
-			const touchDuration = Date.now() - touchStartTime;
-			
-			// Prevent any actions if a file was just opened
+			// Don't do anything if we recently opened a file
 			if (Date.now() - lastTapTime < 1000) {
-				event.preventDefault();
-				event.stopPropagation();
 				return;
 			}
+			
+			// Don't interfere if this was a scrolling gesture
+			if (isScrolling) {
+				return;
+			}
+			
+			const touchDuration = Date.now() - touchStartTime;
 			
 			// Only handle as a tap if touch was quick (less than 500ms)
 			if (touchDuration < 500) {
@@ -1035,9 +1060,12 @@ class RecentNotesView extends ItemView {
 		fileContainer.addEventListener('contextmenu', (event: MouseEvent) => {
 			// On touch devices, we'll only show context menu on long press,
 			// which is handled by the touchend event checking the duration
-			if (isTouchDevice || fileJustOpened || (Date.now() - lastTapTime < 1000)) {
-				event.preventDefault();
-				event.stopPropagation();
+			if (isTouchDevice || (Date.now() - lastTapTime < 1000)) {
+				// Don't prevent default on scrolling - let the browser handle it
+				if (!isScrolling) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
 				return;
 			}
 			
