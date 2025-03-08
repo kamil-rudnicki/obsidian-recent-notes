@@ -162,3 +162,53 @@ body {
     top: 2px;
     margin-right: 4px;
 }
+
+/* Compact view styles */
+body[data-recent-notes-density="compact"] div.recent-note-item {
+    padding: 5px;
+}
+
+body[data-recent-notes-density="compact"] .recent-notes-view h6 {
+    margin: 0;
+}
+
+body[data-recent-notes-density="compact"] div.recent-note-item:hover:not(.is-active) {
+    background: var(--background-modifier-hover);
+}
+
+body[data-recent-notes-density="compact"] .recent-note-header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    width: 100%;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-title {
+    flex-grow: 1; 
+    text-align: left; 
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    order: 1;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-date {
+    color: gray;
+    font-size: 0.8em;
+    white-space: nowrap; 
+    margin-left: 8px;
+    order: 2;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-preview {
+    margin-top: 2px;
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+
+body[data-recent-notes-density="compact"] .recent-note-preview-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+

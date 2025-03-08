@@ -17,6 +17,7 @@ interface RecentNotesSettings {
 	pinnedNotes: string[];
 	dateFormat: string;
 	propertyModified: string;
+	density: string;
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -35,6 +36,7 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	pinnedNotes: [],
 	dateFormat: 'DD/MM/YYYY',
 	propertyModified: '',
+	density: 'comfortable',
 }
 
 // Insert localization translations
@@ -53,7 +55,11 @@ const LOCALES: Record<string, Record<string, string>> = {
 		yesterday: "Yesterday",
 		previous7days: "Previous 7 days",
 		previous30days: "Previous 30 days",
-		daysago: "days ago"
+		daysago: "days ago",
+		density: "Density",
+		comfortable: "Comfortable",
+		compact: "Compact",
+		densityDesc: "Choose between comfortable (default) or compact display"
 	},
 	pl: {
 		recentNotes: "Ostatnie notatki",
@@ -614,6 +620,9 @@ class RecentNotesView extends ItemView {
 		const scrollTop = container.scrollTop;
 		container.empty();
 		
+		// Apply density setting to body
+		document.body.setAttribute('data-recent-notes-density', this.plugin.settings.density);
+		
 		const files = this.app.vault.getFiles()
 			.filter(file => this.shouldRefreshForFile(file))
 			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true))
@@ -645,16 +654,7 @@ class RecentNotesView extends ItemView {
 					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 				});
 
-				const titleEl = fileContainer.createEl('div', { 
-					text: this.getFileDisplayName(file),
-					cls: 'recent-note-title'
-				});
-
-				const hasMultipleLines = this.plugin.settings.previewLines > 1;
-				const infoContainer = fileContainer.createEl('div', { 
-					cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
-				});
-				
+				// Get date text first
 				const now = moment();
 				let dateText;
 				if (moment(this.getModifiedTime(file,true)).isSame(now, 'day') || moment(this.getModifiedTime(file,true)).isSame(now.clone().subtract(1, 'day'), 'day')) {
@@ -677,27 +677,74 @@ class RecentNotesView extends ItemView {
 					}
 				}
 
-				// Only show preview if previewLines > 0
-				if (this.plugin.settings.previewLines > 0) {
-					const firstLine = await this.getFirstLineOfFile(file);
-					const previewContainer = infoContainer.createEl('div', {
-						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+				// Handle compact mode differently
+				if (this.plugin.settings.density === 'compact' && this.plugin.settings.showTime) {
+					// Create a header container for title and date
+					const headerContainer = fileContainer.createEl('div', {
+						cls: 'recent-note-header'
 					});
 					
-					firstLine.split('\n').forEach(line => {
-						previewContainer.createEl('div', {
-							text: line,
-							cls: 'recent-note-preview-line'
-						});
+					// Add title to the header
+					headerContainer.createEl('div', { 
+						text: this.getFileDisplayName(file),
+						cls: 'recent-note-title'
 					});
-				}
-
-				// Only show date if showTime is enabled
-				if (this.plugin.settings.showTime) {
-					const dateEl = infoContainer.createEl('span', {
+					
+					// Add date to the header
+					headerContainer.createEl('span', {
 						text: dateText,
-						cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
+						cls: 'recent-note-date'
 					});
+					
+					// Add preview in compact mode if enabled
+					if (this.plugin.settings.previewLines > 0) {
+						const hasMultipleLines = this.plugin.settings.previewLines > 1;
+						const firstLine = await this.getFirstLineOfFile(file);
+						const previewContainer = fileContainer.createEl('div', {
+							cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+						});
+						
+						firstLine.split('\n').forEach(line => {
+							previewContainer.createEl('div', {
+								text: line,
+								cls: 'recent-note-preview-line'
+							});
+						});
+					}
+				} else {
+					// Original behavior for comfortable mode
+					const titleEl = fileContainer.createEl('div', { 
+						text: this.getFileDisplayName(file),
+						cls: 'recent-note-title'
+					});
+
+					const hasMultipleLines = this.plugin.settings.previewLines > 1;
+					const infoContainer = fileContainer.createEl('div', { 
+						cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+					});
+					
+					// Only show preview if previewLines > 0
+					if (this.plugin.settings.previewLines > 0) {
+						const firstLine = await this.getFirstLineOfFile(file);
+						const previewContainer = infoContainer.createEl('div', {
+							cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+						});
+						
+						firstLine.split('\n').forEach(line => {
+							previewContainer.createEl('div', {
+								text: line,
+								cls: 'recent-note-preview-line'
+							});
+						});
+					}
+
+					// Only show date if showTime is enabled
+					if (this.plugin.settings.showTime) {
+						const dateEl = infoContainer.createEl('span', {
+							text: dateText,
+							cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
+						});
+					}
 				}
 
 				this.addFileItemEventListeners(fileContainer, file);
@@ -719,16 +766,7 @@ class RecentNotesView extends ItemView {
 				cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 			});
 
-			const titleEl = fileContainer.createEl('div', { 
-				text: this.getFileDisplayName(file),
-				cls: 'recent-note-title'
-			});
-
-			const hasMultipleLines = this.plugin.settings.previewLines > 1;
-			const infoContainer = fileContainer.createEl('div', { 
-				cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
-			});
-			
+			// Get date text first
 			const now = moment();
 			let dateText;
 			if (moment(this.getModifiedTime(file,true)).isSame(now, 'day') || moment(this.getModifiedTime(file,true)).isSame(now.clone().subtract(1, 'day'), 'day')) {
@@ -751,27 +789,74 @@ class RecentNotesView extends ItemView {
 				}
 			}
 
-			// Only show preview if previewLines > 0
-			if (this.plugin.settings.previewLines > 0) {
-				const firstLine = await this.getFirstLineOfFile(file);
-				const previewContainer = infoContainer.createEl('div', {
-					cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+			// Handle compact mode differently
+			if (this.plugin.settings.density === 'compact' && this.plugin.settings.showTime) {
+				// Create a header container for title and date
+				const headerContainer = fileContainer.createEl('div', {
+					cls: 'recent-note-header'
 				});
 				
-				firstLine.split('\n').forEach(line => {
-					previewContainer.createEl('div', {
-						text: line,
-						cls: 'recent-note-preview-line'
-					});
+				// Add title to the header
+				headerContainer.createEl('div', { 
+					text: this.getFileDisplayName(file),
+					cls: 'recent-note-title'
 				});
-			}
-
-			// Only show date if showTime is enabled
-			if (this.plugin.settings.showTime) {
-				const dateEl = infoContainer.createEl('span', {
+				
+				// Add date to the header
+				headerContainer.createEl('span', {
 					text: dateText,
-					cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
+					cls: 'recent-note-date'
 				});
+				
+				// Add preview in compact mode if enabled
+				if (this.plugin.settings.previewLines > 0) {
+					const hasMultipleLines = this.plugin.settings.previewLines > 1;
+					const firstLine = await this.getFirstLineOfFile(file);
+					const previewContainer = fileContainer.createEl('div', {
+						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+					});
+					
+					firstLine.split('\n').forEach(line => {
+						previewContainer.createEl('div', {
+							text: line,
+							cls: 'recent-note-preview-line'
+						});
+					});
+				}
+			} else {
+				// Original behavior for comfortable mode
+				const titleEl = fileContainer.createEl('div', { 
+					text: this.getFileDisplayName(file),
+					cls: 'recent-note-title'
+				});
+
+				const hasMultipleLines = this.plugin.settings.previewLines > 1;
+				const infoContainer = fileContainer.createEl('div', { 
+					cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+				});
+				
+				// Only show preview if previewLines > 0
+				if (this.plugin.settings.previewLines > 0) {
+					const firstLine = await this.getFirstLineOfFile(file);
+					const previewContainer = infoContainer.createEl('div', {
+						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
+					});
+					
+					firstLine.split('\n').forEach(line => {
+						previewContainer.createEl('div', {
+							text: line,
+							cls: 'recent-note-preview-line'
+						});
+					});
+				}
+
+				// Only show date if showTime is enabled
+				if (this.plugin.settings.showTime) {
+					const dateEl = infoContainer.createEl('span', {
+						text: dateText,
+						cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
+					});
+				}
 			}
 
 			this.addFileItemEventListeners(fileContainer, file);
@@ -867,6 +952,10 @@ class RecentNotesView extends ItemView {
 	async onOpen() {
 		// Clear old cache entries periodically
 		this.registerInterval(window.setInterval(() => this.clearOldCache(), this.CACHE_DURATION));
+		
+		// Apply density setting to body
+		document.body.setAttribute('data-recent-notes-density', this.plugin.settings.density);
+		
 		await this.refreshView();
 		
 		// Register all events with the debounced refresh
@@ -925,6 +1014,9 @@ class RecentNotesView extends ItemView {
 		if (this.refreshTimeout) {
 			clearTimeout(this.refreshTimeout);
 		}
+		
+		// Remove density setting from body when view is closed
+		document.body.removeAttribute('data-recent-notes-density');
 	}
 
 	private getFileDisplayName(file: TFile): string {
@@ -1146,6 +1238,21 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showTime)
 				.onChange(async (value) => {
 					this.plugin.settings.showTime = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName(this.plugin.translate('density'))
+			.setDesc(this.plugin.translate('densityDesc'))
+			.addDropdown(dropdown => dropdown
+				.addOption('comfortable', this.plugin.translate('comfortable'))
+				.addOption('compact', this.plugin.translate('compact'))
+				.setValue(this.plugin.settings.density)
+				.onChange(async (value) => {
+					this.plugin.settings.density = value;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
