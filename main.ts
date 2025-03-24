@@ -1028,13 +1028,14 @@ class RecentNotesView extends ItemView {
 			// Skip on touch devices - we'll handle with touch events
 			if (isTouchDevice) return;
 			
-			if (event.button !== 0) return;
+			// Left mouse button (button=0) or middle mouse button (button=1)
+			if (event.button !== 0 && event.button !== 1) return;
 			event.preventDefault();
 			event.stopPropagation();
 
-			const leaf = this.app.workspace.getLeaf(
-				event.metaKey || event.ctrlKey
-			);
+			// Middle mouse button click or Ctrl/Meta key pressed to open in new tab
+			const openInNewTab = event.button === 1 || event.metaKey || event.ctrlKey;
+			const leaf = this.app.workspace.getLeaf(openInNewTab);
 			await leaf.openFile(file);
 			
 			if (file.extension !== 'md') {
