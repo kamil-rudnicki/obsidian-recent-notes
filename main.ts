@@ -1062,9 +1062,9 @@ class RecentNotesView extends ItemView {
 			event.preventDefault();
 			event.stopPropagation();
 
-			// Open in a new leaf if middle button or Ctrl/Meta key is pressed
-			const newLeaf = event.button === 1 || event.metaKey || event.ctrlKey;
-			const leaf = this.app.workspace.getLeaf(newLeaf);
+			// Middle mouse button click or Ctrl/Meta key pressed to open in new tab
+			const openInNewTab = event.button === 1 || event.metaKey || event.ctrlKey;
+			const leaf = this.app.workspace.getLeaf(openInNewTab);
 			await leaf.openFile(file);
 			
 			if (file.extension !== 'md') {
