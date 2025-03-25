@@ -18,6 +18,7 @@ interface RecentNotesSettings {
 	dateFormat: string;
 	propertyModified: string;
 	density: string;
+	openInNewTab: string;
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -37,6 +38,7 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	dateFormat: 'DD/MM/YYYY',
 	propertyModified: '',
 	density: 'comfortable',
+	openInNewTab: 'new'
 }
 
 // Insert localization translations
@@ -49,6 +51,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Delete",
 		cancel: "Cancel",
 		open: "Open",
+		openInNewTab: "Open in new tab",
 		moveToPrevious: "Move to previous note",
 		moveToNext: "Move to next note",
 		today: "Today",
@@ -69,6 +72,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Usuń",
 		cancel: "Anuluj",
 		open: "Otwórz",
+		openInNewTab: "Otwórz w nowej karcie",
 		moveToPrevious: "Przejdź do poprzedniej notatki",
 		moveToNext: "Przejdź do następnej notatki",
 		today: "Dzisiaj",
@@ -85,6 +89,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Eliminar",
 		cancel: "Cancelar",
 		open: "Abrir",
+		openInNewTab: "Abrir en nueva pestaña",
 		moveToPrevious: "Ir a la nota anterior",
 		moveToNext: "Ir a la siguiente nota",
 		today: "Hoy",
@@ -101,6 +106,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Supprimer",
 		cancel: "Annuler",
 		open: "Ouvrir",
+		openInNewTab: "Ouvrir dans un nouvel onglet",
 		moveToPrevious: "Aller à la note précédente",
 		moveToNext: "Aller à la note suivante",
 		today: "Aujourd'hui",
@@ -117,6 +123,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Löschen",
 		cancel: "Abbrechen",
 		open: "Öffnen",
+		openInNewTab: "In neuem Tab öffnen",
 		moveToPrevious: "Zur vorherigen Notiz",
 		moveToNext: "Zur nächsten Notiz",
 		today: "Heute",
@@ -133,6 +140,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Elimina",
 		cancel: "Annulla",
 		open: "Apri",
+		openInNewTab: "Apri in nuova scheda",
 		moveToPrevious: "Vai alla nota precedente",
 		moveToNext: "Vai alla nota successiva",
 		today: "Oggi",
@@ -149,6 +157,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "削除",
 		cancel: "キャンセル",
 		open: "開く",
+		openInNewTab: "新しいタブで開く",
 		moveToPrevious: "前のノートへ",
 		moveToNext: "次のノートへ",
 		today: "今日",
@@ -165,6 +174,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "삭제",
 		cancel: "취소",
 		open: "열기",
+		openInNewTab: "새 탭에서 열기",
 		moveToPrevious: "이전 노트로",
 		moveToNext: "다음 노트로",
 		today: "오늘",
@@ -181,6 +191,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "删除",
 		cancel: "取消",
 		open: "打开",
+		openInNewTab: "在新标签页中打开",
 		moveToPrevious: "移至上一个笔记",
 		moveToNext: "移至下一个笔记",
 		today: "今天",
@@ -197,6 +208,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Удалить",
 		cancel: "Отмена",
 		open: "Открыть",
+		openInNewTab: "Открыть в новой вкладке",
 		moveToPrevious: "К предыдущей заметке",
 		moveToNext: "К следующей заметке",
 		today: "Сегодня",
@@ -213,6 +225,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Eliminar",
 		cancel: "Cancelar",
 		open: "Abrir",
+		openInNewTab: "Abrir em novo separador",
 		moveToPrevious: "Ir para a nota anterior",
 		moveToNext: "Ir para a próxima nota",
 		today: "Hoje",
@@ -229,6 +242,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Excluir",
 		cancel: "Cancelar",
 		open: "Abrir",
+		openInNewTab: "Abrir em nova aba",
 		moveToPrevious: "Ir para nota anterior",
 		moveToNext: "Ir para próxima nota",
 		today: "Hoje",
@@ -245,6 +259,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		delete: "Törlés",
 		cancel: "Mégsem",
 		open: "Megnyitás",
+		openInNewTab: "Megnyitás új lapon",
 		moveToPrevious: "Ugrás az előző jegyzetre",
 		moveToNext: "Ugrás az következő jegyzetre",
 		today: "Ma",
@@ -981,6 +996,20 @@ class RecentNotesView extends ItemView {
 				const touch = event.changedTouches[0];
 				const menu = new Menu();
 				
+				// Add open in new tab option
+				menu.addItem((item) => {
+					item
+						.setIcon('open-elsewhere-glyph')
+						.setTitle(this.plugin.translate('openInNewTab'))
+						.onClick(async () => {
+							const leaf = this.app.workspace.getLeaf(true);
+							await leaf.openFile(file);
+							
+							// Block all clicks and context menus temporarily after opening
+							blockEventsTemporarily();
+						});
+				});
+				
 				// Add pin/unpin option
 				const isPinned = this.plugin.settings.pinnedNotes.includes(file.path);
 				menu.addItem((item) => {
@@ -1028,13 +1057,14 @@ class RecentNotesView extends ItemView {
 			// Skip on touch devices - we'll handle with touch events
 			if (isTouchDevice) return;
 			
-			if (event.button !== 0) return;
+			// Handle left click (button 0) and middle click (button 1)
+			if (event.button !== 0 && event.button !== 1) return;
 			event.preventDefault();
 			event.stopPropagation();
 
-			const leaf = this.app.workspace.getLeaf(
-				event.metaKey || event.ctrlKey
-			);
+			// Open in a new leaf if middle button or Ctrl/Meta key is pressed
+			const newLeaf = event.button === 1 || event.metaKey || event.ctrlKey;
+			const leaf = this.app.workspace.getLeaf(newLeaf);
 			await leaf.openFile(file);
 			
 			if (file.extension !== 'md') {
@@ -1071,6 +1101,20 @@ class RecentNotesView extends ItemView {
 			
 			event.preventDefault();
 			const menu = new Menu();
+
+			// Add open in new tab option
+			menu.addItem((item) => {
+				item
+					.setIcon('open-elsewhere-glyph')
+					.setTitle(this.plugin.translate('openInNewTab'))
+					.onClick(async () => {
+						const leaf = this.app.workspace.getLeaf(true);
+						await leaf.openFile(file);
+						
+						// Block all clicks and context menus temporarily after opening
+						blockEventsTemporarily();
+					});
+			});
 
 			// Add pin/unpin option
 			const isPinned = this.plugin.settings.pinnedNotes.includes(file.path);
