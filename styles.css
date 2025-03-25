@@ -188,7 +188,7 @@ body[data-recent-notes-density="compact"] .recent-note-title {
     text-align: left; 
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis;
+    text-overflow: clip;
     order: 1;
 }
 
@@ -209,6 +209,6 @@ body[data-recent-notes-density="compact"] .recent-note-preview {
 body[data-recent-notes-density="compact"] .recent-note-preview-line {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
 }
 
