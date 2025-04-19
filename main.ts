@@ -369,18 +369,20 @@ class RecentNotesView extends ItemView {
 		const files = this.app.vault.getFiles()
 			.filter(file => this.shouldRefreshForFile(file));
 
-		// Get pinned files that still exist
+		// Get all pinned files that still exist regardless of modification time
 		const pinnedFiles = files
 			.filter(file => this.plugin.settings.pinnedNotes.includes(file.path))
 			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true));
 
-		// Get unpinned files
+		// Get unpinned files sorted by modified time
 		const unpinnedFiles = files
 			.filter(file => !this.plugin.settings.pinnedNotes.includes(file.path))
-			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true));
+			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true))
+			// Only limit the number of unpinned files to show
+			.slice(0, this.plugin.settings.maxNotesToShow - pinnedFiles.length);
 
-		// Combine pinned and unpinned files
-		return [...pinnedFiles, ...unpinnedFiles].slice(0, this.plugin.settings.maxNotesToShow);
+		// Combine pinned and unpinned files - pinned notes are always included
+		return [...pinnedFiles, ...unpinnedFiles];
 	}
 
 	private async openFile(file: TFile): Promise<void> {
@@ -638,15 +640,23 @@ class RecentNotesView extends ItemView {
 		// Apply density setting to body
 		document.body.setAttribute('data-recent-notes-density', this.plugin.settings.density);
 		
-		const files = this.app.vault.getFiles()
-			.filter(file => this.shouldRefreshForFile(file))
-			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true))
-			.slice(0, this.plugin.settings.maxNotesToShow);
-
-		// Get pinned files that still exist
-		const pinnedFiles = files.filter(file => this.plugin.settings.pinnedNotes.includes(file.path));
+		// Get all files that match our filter criteria
+		const allMatchingFiles = this.app.vault.getFiles()
+			.filter(file => this.shouldRefreshForFile(file));
+		
+		// Get all pinned files that still exist
+		const pinnedFiles = allMatchingFiles
+			.filter(file => this.plugin.settings.pinnedNotes.includes(file.path))
+			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true));
+		
 		// Get unpinned files
-		const unpinnedFiles = files.filter(file => !this.plugin.settings.pinnedNotes.includes(file.path));
+		const unpinnedFiles = allMatchingFiles
+			.filter(file => !this.plugin.settings.pinnedNotes.includes(file.path))
+			.sort((a, b) => this.getModifiedTime(b,true) - this.getModifiedTime(a,true))
+			.slice(0, this.plugin.settings.maxNotesToShow - pinnedFiles.length);
+		
+		// Combine for UI reference
+		const files = [...pinnedFiles, ...unpinnedFiles];
 
 		let currentSection = '';
 		const activeFile = this.app.workspace.getActiveFile();
