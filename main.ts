@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult, Menu, FileView, setIcon } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, ItemView, ViewStateResult, Menu, FileView, setIcon, getAllTags } from 'obsidian';
 import { moment } from 'obsidian';
 
 interface RecentNotesSettings {
@@ -12,6 +12,7 @@ interface RecentNotesSettings {
 	showCSVFiles: boolean;
 	excludedFolders: string[];
 	excludedFiles: string[];
+	excludedTags: string[];
 	previewLines: number;
 	showTime: boolean;
 	pinnedNotes: string[];
@@ -32,6 +33,7 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	showCSVFiles: true,
 	excludedFolders: [],
 	excludedFiles: [],
+	excludedTags: [],
 	previewLines: 1,
 	showTime: true,
 	pinnedNotes: [],
@@ -428,6 +430,25 @@ class RecentNotesView extends ItemView {
 			return normalizedExcludedFile && filePath === normalizedExcludedFile;
 		});
 		if (isExcludedFile) return false;
+
+		// Check if file has excluded tags
+		if (this.plugin.settings.excludedTags.length > 0) {
+			const fileCache = this.app.metadataCache.getFileCache(file);
+			if (fileCache) {
+				const fileTags = getAllTags(fileCache);
+				if (fileTags && fileTags.length > 0) {
+					const normalizedExcludedTags = this.plugin.settings.excludedTags
+						.map(tag => tag.trim())
+						.filter(tag => tag.length > 0)
+						.map(tag => tag.toLowerCase());
+					const hasExcludedTag = fileTags.some(fileTag => {
+						const normalizedFileTag = fileTag.toLowerCase();
+						return normalizedExcludedTags.includes(normalizedFileTag);
+					});
+					if (hasExcludedTag) return false;
+				}
+			}
+		}
 
 		// Check if file type is enabled in settings
 		const ext = file.extension.toLowerCase();
@@ -1506,6 +1527,23 @@ class RecentNotesSettingTab extends PluginSettingTab {
 						.map(file => file.trim())
 						.filter(file => file.length > 0);
 					this.plugin.settings.excludedFiles = files;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Excluded tags')
+			.setDesc('List of tags to exclude from recent files (one per line)')
+			.addTextArea(text => text
+				.setPlaceholder('#archive\n#private')
+				.setValue(this.plugin.settings.excludedTags.join('\n'))
+				.onChange(async (value) => {
+					const tags = value.split('\n')
+						.map(tag => tag.trim())
+						.filter(tag => tag.length > 0);
+					this.plugin.settings.excludedTags = tags;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
