@@ -10,6 +10,7 @@ interface RecentNotesSettings {
 	showVideoFiles: boolean;
 	showCanvasFiles: boolean;
 	showCSVFiles: boolean;
+	showBaseFiles: boolean;
 	excludedFolders: string[];
 	excludedFiles: string[];
 	excludedTags: string[];
@@ -31,6 +32,7 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	showVideoFiles: true,
 	showCanvasFiles: true,
 	showCSVFiles: true,
+	showBaseFiles: true,
 	excludedFolders: [],
 	excludedFiles: [],
 	excludedTags: [],
@@ -459,7 +461,8 @@ class RecentNotesView extends ItemView {
 			(this.plugin.settings.showAudioFiles && ['mp3', 'wav', 'm4a', 'ogg', '3gp', 'flac', 'webm', 'aac'].includes(ext)) ||
 			(this.plugin.settings.showVideoFiles && ['mp4', 'webm', 'ogv', 'mov', 'mkv'].includes(ext)) ||
 			(this.plugin.settings.showCanvasFiles && ext === 'canvas') ||
-			(this.plugin.settings.showCSVFiles && ext === 'csv')
+			(this.plugin.settings.showCSVFiles && ext === 'csv') ||
+			(this.plugin.settings.showBaseFiles && ext === 'base')
 		);
 	}
 
@@ -568,6 +571,8 @@ class RecentNotesView extends ItemView {
 				} catch {
 					return `CSV file • ${sizeStr}`;
 				}
+			} else if (ext === 'base') {
+				return `Base file • ${sizeStr}`;
 			}
 			return `${ext.toUpperCase()} file • ${sizeStr}`;
 		}
@@ -1651,6 +1656,19 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showCSVFiles)
 				.onChange(async (value) => {
 					this.plugin.settings.showCSVFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show Base files')
+			.setDesc('Show .base files in the recent list')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showBaseFiles)
+				.onChange(async (value) => {
+					this.plugin.settings.showBaseFiles = value;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
