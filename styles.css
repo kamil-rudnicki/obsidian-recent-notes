@@ -65,6 +65,24 @@ body {
     overflow: hidden;
     text-overflow: clip;
 }
+.recent-note-folder {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: calc(var(--nav-item-size) * 0.85);
+    color: var(--text-muted);
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+.recent-note-folder-icon {
+    --icon-size: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
 .recent-note-date {
     color: var(--text-muted);
     flex-shrink: 0;
@@ -140,7 +158,8 @@ body {
     color: var(--recent-notes-active-text-color);
 }
 .recent-note-item.is-active .recent-note-date,
-.recent-note-item.is-active .recent-note-info {
+.recent-note-item.is-active .recent-note-info,
+.recent-note-item.is-active .recent-note-folder {
     color: var(--recent-notes-active-text-color, var(--text-muted));
 }
 
@@ -151,7 +170,8 @@ body {
 .recent-note-item:hover:not(.is-active) .recent-note-date {
     color: var(--recent-notes-hover-text-color, var(--text-muted));
 }
-.recent-note-item:hover:not(.is-active) .recent-note-info {
+.recent-note-item:hover:not(.is-active) .recent-note-info,
+.recent-note-item:hover:not(.is-active) .recent-note-folder {
     color: var(--recent-notes-hover-text-color, var(--text-muted));
 }
 
@@ -210,5 +230,10 @@ body[data-recent-notes-density="compact"] .recent-note-preview-line {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: clip;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-folder {
+    font-size: 0.8em;
+    margin-top: 1px;
 }
 

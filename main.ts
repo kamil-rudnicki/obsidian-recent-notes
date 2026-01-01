@@ -16,6 +16,7 @@ interface RecentNotesSettings {
 	excludedTags: string[];
 	previewLines: number;
 	showTime: boolean;
+	showFolderName: boolean;
 	pinnedNotes: string[];
 	dateFormat: string;
 	propertyModified: string;
@@ -38,6 +39,7 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	excludedTags: [],
 	previewLines: 1,
 	showTime: true,
+	showFolderName: false,
 	pinnedNotes: [],
 	dateFormat: 'DD/MM/YYYY',
 	propertyModified: '',
@@ -734,19 +736,29 @@ class RecentNotesView extends ItemView {
 					const headerContainer = fileContainer.createEl('div', {
 						cls: 'recent-note-header'
 					});
-					
+
 					// Add title to the header
-					headerContainer.createEl('div', { 
+					headerContainer.createEl('div', {
 						text: this.getFileDisplayName(file),
 						cls: 'recent-note-title'
 					});
-					
+
 					// Add date to the header
 					headerContainer.createEl('span', {
 						text: dateText,
 						cls: 'recent-note-date'
 					});
-					
+
+					// Show folder name if enabled
+					if (this.plugin.settings.showFolderName && file.parent && file.parent.path !== '/') {
+						const folderEl = fileContainer.createEl('div', {
+							cls: 'recent-note-folder'
+						});
+						const folderIcon = folderEl.createSpan({ cls: 'recent-note-folder-icon' });
+						setIcon(folderIcon, 'folder');
+						folderEl.createSpan({ text: file.parent.path });
+					}
+
 					// Add preview in compact mode if enabled
 					if (this.plugin.settings.previewLines > 0) {
 						const hasMultipleLines = this.plugin.settings.previewLines > 1;
@@ -754,7 +766,7 @@ class RecentNotesView extends ItemView {
 						const previewContainer = fileContainer.createEl('div', {
 							cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 						});
-						
+
 						firstLine.split('\n').forEach(line => {
 							previewContainer.createEl('div', {
 								text: line,
@@ -764,23 +776,33 @@ class RecentNotesView extends ItemView {
 					}
 				} else {
 					// Original behavior for comfortable mode
-					const titleEl = fileContainer.createEl('div', { 
+					const titleEl = fileContainer.createEl('div', {
 						text: this.getFileDisplayName(file),
 						cls: 'recent-note-title'
 					});
 
+					// Show folder name if enabled
+					if (this.plugin.settings.showFolderName && file.parent && file.parent.path !== '/') {
+						const folderEl = fileContainer.createEl('div', {
+							cls: 'recent-note-folder'
+						});
+						const folderIcon = folderEl.createSpan({ cls: 'recent-note-folder-icon' });
+						setIcon(folderIcon, 'folder');
+						folderEl.createSpan({ text: file.parent.path });
+					}
+
 					const hasMultipleLines = this.plugin.settings.previewLines > 1;
-					const infoContainer = fileContainer.createEl('div', { 
+					const infoContainer = fileContainer.createEl('div', {
 						cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
-					
+
 					// Only show preview if previewLines > 0
 					if (this.plugin.settings.previewLines > 0) {
 						const firstLine = await this.getFirstLineOfFile(file);
 						const previewContainer = infoContainer.createEl('div', {
 							cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 						});
-						
+
 						firstLine.split('\n').forEach(line => {
 							previewContainer.createEl('div', {
 								text: line,
@@ -846,19 +868,29 @@ class RecentNotesView extends ItemView {
 				const headerContainer = fileContainer.createEl('div', {
 					cls: 'recent-note-header'
 				});
-				
+
 				// Add title to the header
-				headerContainer.createEl('div', { 
+				headerContainer.createEl('div', {
 					text: this.getFileDisplayName(file),
 					cls: 'recent-note-title'
 				});
-				
+
 				// Add date to the header
 				headerContainer.createEl('span', {
 					text: dateText,
 					cls: 'recent-note-date'
 				});
-				
+
+				// Show folder name if enabled
+				if (this.plugin.settings.showFolderName && file.parent && file.parent.path !== '/') {
+					const folderEl = fileContainer.createEl('div', {
+						cls: 'recent-note-folder'
+					});
+					const folderIcon = folderEl.createSpan({ cls: 'recent-note-folder-icon' });
+					setIcon(folderIcon, 'folder');
+					folderEl.createSpan({ text: file.parent.path });
+				}
+
 				// Add preview in compact mode if enabled
 				if (this.plugin.settings.previewLines > 0) {
 					const hasMultipleLines = this.plugin.settings.previewLines > 1;
@@ -866,7 +898,7 @@ class RecentNotesView extends ItemView {
 					const previewContainer = fileContainer.createEl('div', {
 						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
-					
+
 					firstLine.split('\n').forEach(line => {
 						previewContainer.createEl('div', {
 							text: line,
@@ -876,23 +908,33 @@ class RecentNotesView extends ItemView {
 				}
 			} else {
 				// Original behavior for comfortable mode
-				const titleEl = fileContainer.createEl('div', { 
+				const titleEl = fileContainer.createEl('div', {
 					text: this.getFileDisplayName(file),
 					cls: 'recent-note-title'
 				});
 
+				// Show folder name if enabled
+				if (this.plugin.settings.showFolderName && file.parent && file.parent.path !== '/') {
+					const folderEl = fileContainer.createEl('div', {
+						cls: 'recent-note-folder'
+					});
+					const folderIcon = folderEl.createSpan({ cls: 'recent-note-folder-icon' });
+					setIcon(folderIcon, 'folder');
+					folderEl.createSpan({ text: file.parent.path });
+				}
+
 				const hasMultipleLines = this.plugin.settings.previewLines > 1;
-				const infoContainer = fileContainer.createEl('div', { 
+				const infoContainer = fileContainer.createEl('div', {
 					cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 				});
-				
+
 				// Only show preview if previewLines > 0
 				if (this.plugin.settings.previewLines > 0) {
 					const firstLine = await this.getFirstLineOfFile(file);
 					const previewContainer = infoContainer.createEl('div', {
 						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
-					
+
 					firstLine.split('\n').forEach(line => {
 						previewContainer.createEl('div', {
 							text: line,
@@ -1483,6 +1525,19 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showTime)
 				.onChange(async (value) => {
 					this.plugin.settings.showTime = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Show folder name')
+			.setDesc('Show the folder path underneath the note title')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showFolderName)
+				.onChange(async (value) => {
+					this.plugin.settings.showFolderName = value;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
