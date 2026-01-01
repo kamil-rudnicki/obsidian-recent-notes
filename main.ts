@@ -704,7 +704,8 @@ class RecentNotesView extends ItemView {
 			
 			for (const file of pinnedFiles) {
 				const fileContainer = container.createEl('div', { 
-					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
+					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`,
+					attr: { 'data-path': file.path }
 				});
 
 				// Get date text first
@@ -836,7 +837,8 @@ class RecentNotesView extends ItemView {
 			}
 
 			const fileContainer = container.createEl('div', { 
-				cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
+				cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`,
+				attr: { 'data-path': file.path }
 			});
 
 			// Get date text first
