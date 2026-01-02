@@ -45,6 +45,47 @@ settings:
         default-light: '#E8E9EA'
         default-dark: '#2D3034'
     -
+        id: section-headers-heading
+        title: Section Headers
+        type: heading
+        level: 2
+    -
+        id: recent-notes-header-font-size
+        title: Header Font Size
+        description: Font size for the time section headers (Today, Yesterday, etc.)
+        type: variable-number
+        format: px
+        default: 12
+    -
+        id: recent-notes-header-color
+        title: Header Text Color
+        description: Text color for the time section headers
+        type: variable-themed-color
+        format: hex
+        opacity: true
+        default-light: '#666666'
+        default-dark: '#999999'
+    -
+        id: recent-notes-header-font-weight
+        title: Header Font Weight
+        description: Font weight for the time section headers
+        type: variable-select
+        default: '500'
+        options:
+            - { label: Normal, value: '400' }
+            - { label: Medium, value: '500' }
+            - { label: Semi-Bold, value: '600' }
+            - { label: Bold, value: '700' }
+    -
+        id: recent-notes-header-font-style
+        title: Header Font Style
+        description: Font style for the time section headers
+        type: variable-select
+        default: normal
+        options:
+            - { label: Normal, value: normal }
+            - { label: Italic, value: italic }
+    -
         id: thumbnails-group
         title: Thumbnails
         type: heading
@@ -78,6 +119,9 @@ body {
     --recent-notes-max-width: 500px;
     --recent-notes-thumbnail-size: 80px;
     --recent-notes-thumbnail-size-compact: 40px;
+    --recent-notes-header-font-size: 12px;
+    --recent-notes-header-font-weight: 500;
+    --recent-notes-header-font-style: normal;
 }
 
 .recent-note-item {
@@ -170,9 +214,10 @@ body {
     top: -14px;
     padding: 6px 0px;
     margin: 26px 0px 0px 0px;
-    color: var(--text-muted);
-    font-size: calc(var(--nav-item-size) * 0.9);
-    font-weight: 500;
+    color: var(--recent-notes-header-color, var(--text-muted));
+    font-size: var(--recent-notes-header-font-size, calc(var(--nav-item-size) * 0.9));
+    font-weight: var(--recent-notes-header-font-weight, 500);
+    font-style: var(--recent-notes-header-font-style, normal);
     z-index: 1;
     border-bottom: 1px solid var(--background-modifier-border);
 }
