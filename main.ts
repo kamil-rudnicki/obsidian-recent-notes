@@ -21,6 +21,9 @@ interface RecentNotesSettings {
 	propertyModified: string;
 	density: string;
 	openInNewTab: string;
+	showThumbnail: boolean;
+	thumbnailProperty: string;
+	thumbnailPosition: 'left' | 'right';
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -42,7 +45,10 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	dateFormat: 'DD/MM/YYYY',
 	propertyModified: '',
 	density: 'comfortable',
-	openInNewTab: 'new'
+	openInNewTab: 'new',
+	showThumbnail: false,
+	thumbnailProperty: 'image',
+	thumbnailPosition: 'left'
 }
 
 // Insert localization translations
@@ -58,6 +64,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Open in new tab",
 		moveToPrevious: "Move to previous note",
 		moveToNext: "Move to next note",
+		moveToPreviousPage: "Move to previous page",
+		moveToNextPage: "Move to next page",
 		today: "Today",
 		yesterday: "Yesterday",
 		previous7days: "Previous 7 days",
@@ -66,7 +74,16 @@ const LOCALES: Record<string, Record<string, string>> = {
 		density: "Density",
 		comfortable: "Comfortable",
 		compact: "Compact",
-		densityDesc: "Choose between comfortable (default) or compact display"
+		densityDesc: "Choose between comfortable (default) or compact display",
+		showThumbnail: "Show thumbnail",
+		showThumbnailDesc: "Show the first image from the note as a thumbnail",
+		thumbnailProperty: "Thumbnail property",
+		thumbnailPropertyDesc: "Property name to use for the thumbnail image",
+		thumbnailPosition: "Thumbnail position",
+		thumbnailPositionDesc: "Choose whether the thumbnail should be on the left or right",
+		left: "Left",
+		right: "Right",
+		thumbnails: "Thumbnails"
 	},
 	pl: {
 		recentNotes: "Ostatnie notatki",
@@ -79,6 +96,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Otwórz w nowej karcie",
 		moveToPrevious: "Przejdź do poprzedniej notatki",
 		moveToNext: "Przejdź do następnej notatki",
+		moveToPreviousPage: "Przejdź do poprzedniej strony",
+		moveToNextPage: "Przejdź do następnej strony",
 		today: "Dzisiaj",
 		yesterday: "Wczoraj",
 		previous7days: "Poprzednie 7 dni",
@@ -96,6 +115,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Abrir en nueva pestaña",
 		moveToPrevious: "Ir a la nota anterior",
 		moveToNext: "Ir a la siguiente nota",
+		moveToPreviousPage: "Ir a la página anterior",
+		moveToNextPage: "Ir a la página siguiente",
 		today: "Hoy",
 		yesterday: "Ayer",
 		previous7days: "Últimos 7 días",
@@ -113,6 +134,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Ouvrir dans un nouvel onglet",
 		moveToPrevious: "Aller à la note précédente",
 		moveToNext: "Aller à la note suivante",
+		moveToPreviousPage: "Aller à la page précédente",
+		moveToNextPage: "Aller à la page suivante",
 		today: "Aujourd'hui",
 		yesterday: "Hier",
 		previous7days: "7 derniers jours",
@@ -130,11 +153,26 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "In neuem Tab öffnen",
 		moveToPrevious: "Zur vorherigen Notiz",
 		moveToNext: "Zur nächsten Notiz",
+		moveToPreviousPage: "Eine Seite nach oben",
+		moveToNextPage: "Eine Seite nach unten",
 		today: "Heute",
 		yesterday: "Gestern",
 		previous7days: "Letzte 7 Tage",
 		previous30days: "Letzte 30 Tage",
-		daysago: "Tage her"
+		daysago: "Tage her",
+		density: "Dichte",
+		comfortable: "Komfortabel",
+		compact: "Kompakt",
+		densityDesc: "Wählen Sie zwischen komfortabler (Standard) oder kompakter Anzeige",
+		showThumbnail: "Vorschaubild anzeigen",
+		showThumbnailDesc: "Zeigt das erste Bild der Notiz als Vorschaubild an",
+		thumbnailProperty: "Eigenschaft für Vorschaubild",
+		thumbnailPropertyDesc: "Name der Frontmatter-Eigenschaft, die für das Vorschaubild verwendet werden soll",
+		thumbnailPosition: "Position des Vorschaubildes",
+		thumbnailPositionDesc: "Wählen Sie, ob das Vorschaubild links oder rechts stehen soll",
+		left: "Links",
+		right: "Rechts",
+		thumbnails: "Vorschaubilder"
 	},
 	it: {
 		recentNotes: "Note recenti",
@@ -147,6 +185,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Apri in nuova scheda",
 		moveToPrevious: "Vai alla nota precedente",
 		moveToNext: "Vai alla nota successiva",
+		moveToPreviousPage: "Vai alla pagina precedente",
+		moveToNextPage: "Vai alla pagina successiva",
 		today: "Oggi",
 		yesterday: "Ieri",
 		previous7days: "Ultimi 7 giorni",
@@ -164,6 +204,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "新しいタブで開く",
 		moveToPrevious: "前のノートへ",
 		moveToNext: "次のノートへ",
+		moveToPreviousPage: "前のページへ",
+		moveToNextPage: "次のページへ",
 		today: "今日",
 		yesterday: "昨日",
 		previous7days: "過去7日間",
@@ -181,6 +223,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "새 탭에서 열기",
 		moveToPrevious: "이전 노트로",
 		moveToNext: "다음 노트로",
+		moveToPreviousPage: "이전 페이지로",
+		moveToNextPage: "다음 페이지로",
 		today: "오늘",
 		yesterday: "어제",
 		previous7days: "지난 7일",
@@ -198,6 +242,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "在新标签页中打开",
 		moveToPrevious: "移至上一个笔记",
 		moveToNext: "移至下一个笔记",
+		moveToPreviousPage: "移至上一页",
+		moveToNextPage: "移至下一页",
 		today: "今天",
 		yesterday: "昨天",
 		previous7days: "最近7天",
@@ -215,6 +261,8 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Открыть в новой вкладке",
 		moveToPrevious: "К предыдущей заметке",
 		moveToNext: "К следующей заметке",
+		moveToPreviousPage: "На страницу вверх",
+		moveToNextPage: "На страницу вниз",
 		today: "Сегодня",
 		yesterday: "Вчера",
 		previous7days: "Последние 7 дней",
@@ -298,6 +346,7 @@ class RecentNotesView extends ItemView {
 	private refreshTimeout: NodeJS.Timeout | null = null;
 	private lastActiveFile: string | null = null;
 	private firstLineCache: Map<string, { line: string, timestamp: number }> = new Map();
+	private thumbnailCache: Map<string, { url: string | null, timestamp: number }> = new Map();
 	private readonly MAX_FILE_SIZE_FOR_PREVIEW = 100 * 1024; // 100 KB
 	private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 	private lastEditedFile: string | null = null;
@@ -342,6 +391,39 @@ class RecentNotesView extends ItemView {
 		}
 
 		this.openFile(files[nextIndex]);
+	}
+
+	public moveToAdjacentNotePage(direction: 'up' | 'down'): void {
+		const files = this.getRecentFiles();
+		if (files.length === 0) return;
+
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
+			this.openFile(targetFile);
+			return;
+		}
+
+		const currentIndex = files.findIndex(f => f.path === activeFile.path);
+		if (currentIndex === -1) {
+			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
+			this.openFile(targetFile);
+			return;
+		}
+
+		// Skip 5 notes for page up/down
+		const pageSize = 5;
+		let nextIndex = direction === 'up' ? currentIndex - pageSize : currentIndex + pageSize;
+		
+		if (nextIndex < 0) {
+			nextIndex = 0;
+		} else if (nextIndex >= files.length) {
+			nextIndex = files.length - 1;
+		}
+
+		if (nextIndex !== currentIndex) {
+			this.openFile(files[nextIndex]);
+		}
 	}
 
 	private static fileModifiedTimes = new Map<TFile, number>(); // UNIX timestamp, in milliseconds
@@ -393,6 +475,14 @@ class RecentNotesView extends ItemView {
 		const leaf = this.app.workspace.getMostRecentLeaf();
 		if (leaf) {
 			await leaf.openFile(file);
+			this.scrollToActiveNote();
+		}
+	}
+
+	private scrollToActiveNote() {
+		const activeItem = this.containerEl.querySelector('.recent-note-item.is-active');
+		if (activeItem) {
+			activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 		}
 	}
 
@@ -401,6 +491,11 @@ class RecentNotesView extends ItemView {
 		for (const [path, data] of this.firstLineCache.entries()) {
 			if (now - data.timestamp > this.CACHE_DURATION) {
 				this.firstLineCache.delete(path);
+			}
+		}
+		for (const [path, data] of this.thumbnailCache.entries()) {
+			if (now - data.timestamp > this.CACHE_DURATION) {
+				this.thumbnailCache.delete(path);
 			}
 		}
 	}
@@ -516,6 +611,71 @@ class RecentNotesView extends ItemView {
 		text = text.replace(/www\./g, '');
 		
 		return text.trim();
+	}
+
+	private async getThumbnail(file: TFile): Promise<string | null> {
+		if (file.extension.toLowerCase() !== 'md') {
+			if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(file.extension.toLowerCase())) {
+				return this.app.vault.adapter.getResourcePath(file.path);
+			}
+			return null;
+		}
+
+		const cached = this.thumbnailCache.get(file.path);
+		if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+			return cached.url;
+		}
+
+		let thumbnailUrl: string | null = null;
+
+		try {
+			const fileCache = this.app.metadataCache.getFileCache(file);
+			
+			// 1. Check frontmatter property
+			if (fileCache?.frontmatter && this.plugin.settings.thumbnailProperty) {
+				const propertyValue = fileCache.frontmatter[this.plugin.settings.thumbnailProperty];
+				if (propertyValue && typeof propertyValue === 'string') {
+					const linkedFile = this.app.metadataCache.getFirstLinkpathDest(propertyValue, file.path);
+					if (linkedFile) {
+						thumbnailUrl = this.app.vault.adapter.getResourcePath(linkedFile.path);
+					} else if (propertyValue.startsWith('http')) {
+						thumbnailUrl = propertyValue;
+					}
+				}
+			}
+
+			// 2. Check for first image in content if not found in frontmatter
+			if (!thumbnailUrl) {
+				const content = await this.app.vault.cachedRead(file);
+				
+				// Match ![[image.png]] or ![] (image.png)
+				const wikiMatch = content.match(/!\[\[(.*?)\]\]/);
+				const mdMatch = content.match(/!\[.*?\]\((.*?)\)/);
+				
+				let firstImagePath: string | null = null;
+				if (wikiMatch) {
+					firstImagePath = wikiMatch[1].split('|')[0];
+				} else if (mdMatch) {
+					firstImagePath = mdMatch[1];
+				}
+
+				if (firstImagePath) {
+					if (firstImagePath.startsWith('http')) {
+						thumbnailUrl = firstImagePath;
+					} else {
+						const linkedFile = this.app.metadataCache.getFirstLinkpathDest(firstImagePath, file.path);
+						if (linkedFile) {
+							thumbnailUrl = this.app.vault.adapter.getResourcePath(linkedFile.path);
+						}
+					}
+				}
+			}
+		} catch (e) {
+			console.error("Error getting thumbnail", e);
+		}
+
+		this.thumbnailCache.set(file.path, { url: thumbnailUrl, timestamp: Date.now() });
+		return thumbnailUrl;
 	}
 
 	async getFirstLineOfFile(file: TFile): Promise<string> {
@@ -704,6 +864,28 @@ class RecentNotesView extends ItemView {
 				const fileContainer = container.createEl('div', { 
 					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 				});
+				fileContainer.setAttribute('data-thumbnail-position', this.plugin.settings.thumbnailPosition);
+
+				const itemWrapper = fileContainer.createEl('div', {
+					cls: 'recent-note-item-wrapper'
+				});
+
+				if (this.plugin.settings.showThumbnail) {
+					const thumbnail = await this.getThumbnail(file);
+					if (thumbnail) {
+						const thumbnailContainer = itemWrapper.createEl('div', {
+							cls: 'recent-note-thumbnail-container'
+						});
+						thumbnailContainer.createEl('img', {
+							attr: { src: thumbnail },
+							cls: 'recent-note-thumbnail'
+						});
+					}
+				}
+
+				const contentContainer = itemWrapper.createEl('div', {
+					cls: 'recent-note-content'
+				});
 
 				// Get date text first
 				const now = moment();
@@ -731,7 +913,7 @@ class RecentNotesView extends ItemView {
 				// Handle compact mode differently
 				if (this.plugin.settings.density === 'compact' && this.plugin.settings.showTime) {
 					// Create a header container for title and date
-					const headerContainer = fileContainer.createEl('div', {
+					const headerContainer = contentContainer.createEl('div', {
 						cls: 'recent-note-header'
 					});
 					
@@ -751,7 +933,7 @@ class RecentNotesView extends ItemView {
 					if (this.plugin.settings.previewLines > 0) {
 						const hasMultipleLines = this.plugin.settings.previewLines > 1;
 						const firstLine = await this.getFirstLineOfFile(file);
-						const previewContainer = fileContainer.createEl('div', {
+						const previewContainer = contentContainer.createEl('div', {
 							cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 						});
 						
@@ -764,13 +946,13 @@ class RecentNotesView extends ItemView {
 					}
 				} else {
 					// Original behavior for comfortable mode
-					const titleEl = fileContainer.createEl('div', { 
+					const titleEl = contentContainer.createEl('div', { 
 						text: this.getFileDisplayName(file),
 						cls: 'recent-note-title'
 					});
 
 					const hasMultipleLines = this.plugin.settings.previewLines > 1;
-					const infoContainer = fileContainer.createEl('div', { 
+					const infoContainer = contentContainer.createEl('div', { 
 						cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
 					
@@ -816,6 +998,28 @@ class RecentNotesView extends ItemView {
 			const fileContainer = container.createEl('div', { 
 				cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 			});
+			fileContainer.setAttribute('data-thumbnail-position', this.plugin.settings.thumbnailPosition);
+
+			const itemWrapper = fileContainer.createEl('div', {
+				cls: 'recent-note-item-wrapper'
+			});
+
+			if (this.plugin.settings.showThumbnail) {
+				const thumbnail = await this.getThumbnail(file);
+				if (thumbnail) {
+					const thumbnailContainer = itemWrapper.createEl('div', {
+						cls: 'recent-note-thumbnail-container'
+					});
+					thumbnailContainer.createEl('img', {
+						attr: { src: thumbnail },
+						cls: 'recent-note-thumbnail'
+					});
+				}
+			}
+
+			const contentContainer = itemWrapper.createEl('div', {
+				cls: 'recent-note-content'
+			});
 
 			// Get date text first
 			const now = moment();
@@ -843,7 +1047,7 @@ class RecentNotesView extends ItemView {
 			// Handle compact mode differently
 			if (this.plugin.settings.density === 'compact' && this.plugin.settings.showTime) {
 				// Create a header container for title and date
-				const headerContainer = fileContainer.createEl('div', {
+				const headerContainer = contentContainer.createEl('div', {
 					cls: 'recent-note-header'
 				});
 				
@@ -863,7 +1067,7 @@ class RecentNotesView extends ItemView {
 				if (this.plugin.settings.previewLines > 0) {
 					const hasMultipleLines = this.plugin.settings.previewLines > 1;
 					const firstLine = await this.getFirstLineOfFile(file);
-					const previewContainer = fileContainer.createEl('div', {
+					const previewContainer = contentContainer.createEl('div', {
 						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
 					
@@ -876,13 +1080,13 @@ class RecentNotesView extends ItemView {
 				}
 			} else {
 				// Original behavior for comfortable mode
-				const titleEl = fileContainer.createEl('div', { 
+				const titleEl = contentContainer.createEl('div', { 
 					text: this.getFileDisplayName(file),
 					cls: 'recent-note-title'
 				});
 
 				const hasMultipleLines = this.plugin.settings.previewLines > 1;
-				const infoContainer = fileContainer.createEl('div', { 
+				const infoContainer = contentContainer.createEl('div', { 
 					cls: `recent-note-info ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 				});
 				
@@ -919,6 +1123,10 @@ class RecentNotesView extends ItemView {
 		} else {
 			container.scrollTop = scrollTop;
 		}
+		
+		// Ensure the active note is visible
+		this.scrollToActiveNote();
+		
 		// Reset the last edited file after handling the scroll
 		this.lastEditedFile = null;
 	}
@@ -1014,6 +1222,7 @@ class RecentNotesView extends ItemView {
 				
 				const leaf = this.app.workspace.getLeaf(false);
 				await leaf.openFile(file);
+				this.scrollToActiveNote();
 				lastTapTime = Date.now(); // Record when we opened the file
 				
 				if (file.extension !== 'md') {
@@ -1102,6 +1311,7 @@ class RecentNotesView extends ItemView {
 			const openInNewTab = event.button === 1 || event.metaKey || event.ctrlKey;
 			const leaf = this.app.workspace.getLeaf(openInNewTab);
 			await leaf.openFile(file);
+			this.scrollToActiveNote();
 			
 			if (file.extension !== 'md') {
 				setTimeout(() => {
@@ -1366,6 +1576,28 @@ export default class RecentNotesPlugin extends Plugin {
 					this.view.moveToAdjacentNote('down');
 				}
 			},
+		});
+
+		this.addCommand({
+			id: 'move-to-previous-page-recent-note',
+			name: this.translate('moveToPreviousPage'),
+			callback: () => {
+				if (this.view) {
+					this.view.moveToAdjacentNotePage('up');
+				}
+			},
+			hotkeys: [{ modifiers: [], key: 'PageUp' }]
+		});
+
+		this.addCommand({
+			id: 'move-to-next-page-recent-note',
+			name: this.translate('moveToNextPage'),
+			callback: () => {
+				if (this.view) {
+					this.view.moveToAdjacentNotePage('down');
+				}
+			},
+			hotkeys: [{ modifiers: [], key: 'PageDown' }]
 		});
 
 		this.addSettingTab(new RecentNotesSettingTab(this.app, this));
@@ -1669,6 +1901,50 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showBaseFiles)
 				.onChange(async (value) => {
 					this.plugin.settings.showBaseFiles = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		containerEl.createEl('h3', { text: this.plugin.translate('thumbnails') });
+
+		new Setting(containerEl)
+			.setName(this.plugin.translate('showThumbnail'))
+			.setDesc(this.plugin.translate('showThumbnailDesc'))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showThumbnail)
+				.onChange(async (value) => {
+					this.plugin.settings.showThumbnail = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName(this.plugin.translate('thumbnailProperty'))
+			.setDesc(this.plugin.translate('thumbnailPropertyDesc'))
+			.addText(text => text
+				.setPlaceholder('image')
+				.setValue(this.plugin.settings.thumbnailProperty)
+				.onChange(async (value) => {
+					this.plugin.settings.thumbnailProperty = value;
+					await this.plugin.saveSettings();
+					if (this.plugin.view) {
+						await this.plugin.view.refreshView();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName(this.plugin.translate('thumbnailPosition'))
+			.setDesc(this.plugin.translate('thumbnailPositionDesc'))
+			.addDropdown(dropdown => dropdown
+				.addOption('left', this.plugin.translate('left'))
+				.addOption('right', this.plugin.translate('right'))
+				.setValue(this.plugin.settings.thumbnailPosition)
+				.onChange(async (value: 'left' | 'right') => {
+					this.plugin.settings.thumbnailPosition = value;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
