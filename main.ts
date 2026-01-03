@@ -1234,60 +1234,42 @@ class RecentNotesView extends ItemView {
 							cls: 'recent-note-thumbnail-container'
 						});
 
-						if (isCompact && showTime) {
-							thumbnailContainer.createEl('div', {
-								text: dateText,
-								cls: 'recent-note-date-compact'
-							});
-						}
-
 						thumbnailContainer.createEl('img', {
 							attr: { src: thumbnail },
 							cls: 'recent-note-thumbnail'
 						});
 					} else {
 						itemWrapper.addClass('no-thumbnail');
-						if (isCompact && showTime) {
-							// Show date even if no thumbnail in compact mode
-							const dateContainer = itemWrapper.createEl('div', {
-								cls: 'recent-note-thumbnail-container no-thumbnail'
-							});
-							dateContainer.createEl('div', {
-								text: dateText,
-								cls: 'recent-note-date-compact'
-							});
-						}
 					}
-				} else if (isCompact && showTime) {
-					// Show date even if thumbnails are disabled in compact mode
-					const dateContainer = itemWrapper.createEl('div', {
-						cls: 'recent-note-thumbnail-container no-thumbnail'
-					});
-					dateContainer.createEl('div', {
-						text: dateText,
-						cls: 'recent-note-date-compact'
-					});
 				}
 
 				const contentContainer = itemWrapper.createEl('div', {
 					cls: 'recent-note-content'
 				});
 
-				// Handle compact mode differently
-				if (isCompact && showTime) {
-					// Create a header container for title
-					const headerContainer = contentContainer.createEl('div', {
-						cls: 'recent-note-header'
+			// Handle compact mode differently
+			if (isCompact) {
+				// Create a header container for title
+				const headerContainer = contentContainer.createEl('div', {
+					cls: 'recent-note-header'
+				});
+				
+				// Add title to the header
+				headerContainer.createEl('div', { 
+					text: this.getFileDisplayName(file),
+					cls: 'recent-note-title'
+				});
+				
+				// Add date to the right of title in compact mode
+				if (showTime) {
+					headerContainer.createEl('div', {
+						text: dateText,
+						cls: 'recent-note-date-compact'
 					});
-					
-					// Add title to the header
-					headerContainer.createEl('div', { 
-						text: this.getFileDisplayName(file),
-						cls: 'recent-note-title'
-					});
-					
-					// Add preview in compact mode if enabled
-					if (this.plugin.settings.previewLines > 0) {
+				}
+				
+				// Add preview in compact mode if enabled
+				if (this.plugin.settings.previewLines > 0) {
 						const hasMultipleLines = this.plugin.settings.previewLines > 1;
 						const firstLine = await this.getFirstLineOfFile(file);
 						const previewContainer = contentContainer.createEl('div', {
@@ -1403,39 +1385,13 @@ class RecentNotesView extends ItemView {
 						cls: 'recent-note-thumbnail-container'
 					});
 
-					if (isCompact && showTime) {
-						thumbnailContainer.createEl('div', {
-							text: dateText,
-							cls: 'recent-note-date-compact'
-						});
-					}
-
 					thumbnailContainer.createEl('img', {
 						attr: { src: thumbnail },
 						cls: 'recent-note-thumbnail'
 					});
 				} else {
 					itemWrapper.addClass('no-thumbnail');
-					if (isCompact && showTime) {
-						// Show date even if no thumbnail in compact mode
-						const dateContainer = itemWrapper.createEl('div', {
-							cls: 'recent-note-thumbnail-container no-thumbnail'
-						});
-						dateContainer.createEl('div', {
-							text: dateText,
-							cls: 'recent-note-date-compact'
-						});
-					}
 				}
-			} else if (isCompact && showTime) {
-				// Show date even if thumbnails are disabled in compact mode
-				const dateContainer = itemWrapper.createEl('div', {
-					cls: 'recent-note-thumbnail-container no-thumbnail'
-				});
-				dateContainer.createEl('div', {
-					text: dateText,
-					cls: 'recent-note-date-compact'
-				});
 			}
 
 			const contentContainer = itemWrapper.createEl('div', {
@@ -1443,7 +1399,7 @@ class RecentNotesView extends ItemView {
 			});
 
 			// Handle compact mode differently
-			if (isCompact && showTime) {
+			if (isCompact) {
 				// Create a header container for title
 				const headerContainer = contentContainer.createEl('div', {
 					cls: 'recent-note-header'
@@ -1454,6 +1410,14 @@ class RecentNotesView extends ItemView {
 					text: this.getFileDisplayName(file),
 					cls: 'recent-note-title'
 				});
+				
+				// Add date to the header in compact mode
+				if (showTime) {
+					headerContainer.createEl('div', {
+						text: dateText,
+						cls: 'recent-note-date-compact'
+					});
+				}
 				
 				// Add preview in compact mode if enabled
 				if (this.plugin.settings.previewLines > 0) {
