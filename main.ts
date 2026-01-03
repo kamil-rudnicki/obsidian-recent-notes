@@ -68,6 +68,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Move to next note",
 		moveToPreviousPage: "Move to previous page",
 		moveToNextPage: "Move to next page",
+		
 		today: "Today",
 		yesterday: "Yesterday",
 		previous7days: "Previous 7 days",
@@ -87,7 +88,35 @@ const LOCALES: Record<string, Record<string, string>> = {
 		right: "Right",
 		thumbnails: "Thumbnails",
 		pageStepSize: "Page step size",
-		pageStepSizeDesc: "Number of notes to skip when using Ctrl+PageUp/PageDown"
+		pageStepSizeDesc: "Number of notes to skip when using Ctrl+PageUp/PageDown",
+		dateFormat: "Date format",
+		dateFormatDesc: "Format for displaying dates older than 7 days",
+		maxNotesToShow: "Maximum notes to show",
+		maxNotesToShowDesc: "How many recent notes to display in the view",
+		previewLines: "Preview lines",
+		previewLinesDesc: "Number of text lines to show in the preview (0-3)",
+		noPreview: "No preview",
+		line: "line",
+		lines: "lines",
+		showTime: "Show time",
+		showTimeDesc: "Show modification time next to files",
+		excludedFolders: "Excluded folders",
+		excludedFoldersDesc: "Folders to exclude (one per line)",
+		excludedFiles: "Excluded files",
+		excludedFilesDesc: "Files to exclude (one per line)",
+		excludedTags: "Excluded tags",
+		excludedTagsDesc: "Tags to exclude (one per line)",
+		customProperty: "Custom Modified Date property",
+		customPropertyDesc: "Frontmatter property for modification date",
+		fileTypes: "File types to show",
+		showMarkdown: "Show Markdown files",
+		showImages: "Show Image files",
+		showPDF: "Show PDF files",
+		showAudio: "Show Audio files",
+		showVideo: "Show Video files",
+		showCanvas: "Show Canvas files",
+		showCSV: "Show CSV files",
+		showBase: "Show Base files"
 	},
 	pl: {
 		recentNotes: "Ostatnie notatki",
@@ -102,11 +131,27 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Przejdź do następnej notatki",
 		moveToPreviousPage: "Przejdź do poprzedniej strony",
 		moveToNextPage: "Przejdź do następnej strony",
+		
 		today: "Dzisiaj",
 		yesterday: "Wczoraj",
 		previous7days: "Poprzednie 7 dni",
 		previous30days: "Poprzednie 30 dni",
-		daysago: "dni temu"
+		daysago: "dni temu",
+		density: "Zagęszczenie",
+		comfortable: "Wygodny",
+		compact: "Kompaktowy",
+		densityDesc: "Wybierz między wygodnym (domyślnym) a kompaktowym wyświetlaniem",
+		showThumbnail: "Pokaż miniaturkę",
+		showThumbnailDesc: "Pokaż pierwszy obraz z notatki jako miniaturkę",
+		thumbnailProperty: "Właściwość miniaturki",
+		thumbnailPropertyDesc: "Nazwa właściwości używanej do obrazu miniaturki",
+		thumbnailPosition: "Pozycja miniaturki",
+		thumbnailPositionDesc: "Wybierz, czy miniaturka ma być po lewej, czy po prawej stronie",
+		left: "Lewo",
+		right: "Prawo",
+		thumbnails: "Miniaturki",
+		pageStepSize: "Rozmiar kroku strony",
+		pageStepSizeDesc: "Liczba notatek do pominięcia przy użyciu Ctrl+PageUp/PageDown"
 	},
 	es: {
 		recentNotes: "Notas recientes",
@@ -121,11 +166,33 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Ir a la siguiente nota",
 		moveToPreviousPage: "Ir a la página anterior",
 		moveToNextPage: "Ir a la página siguiente",
+		
 		today: "Hoy",
 		yesterday: "Ayer",
 		previous7days: "Últimos 7 días",
 		previous30days: "Últimos 30 días",
-		daysago: "días atrás"
+		daysago: "días atrás",
+		density: "Densidad",
+		comfortable: "Cómodo",
+		compact: "Compacto",
+		densityDesc: "Elige entre visualización cómoda (predeterminada) o compacta",
+		showThumbnail: "Mostrar miniatura",
+		showThumbnailDesc: "Muestra la primera imagen de la nota como miniatura",
+		thumbnailProperty: "Propiedad de miniatura",
+		thumbnailPropertyDesc: "Nombre de la propiedad a utilizar para la imagen de miniatura",
+		thumbnailPosition: "Posición de la miniatura",
+		thumbnailPositionDesc: "Elige si la miniatura debe estar a la izquierda o a la derecha",
+		left: "Izquierda",
+		right: "Derecha",
+		thumbnails: "Miniaturas",
+		pageStepSize: "Tamaño del paso de página",
+		pageStepSizeDesc: "Número de notas a saltar al usar Ctrl+RePág/AvPág",
+		dateFormat: "Formato de fecha",
+		maxNotesToShow: "Máximo de notas a mostrar",
+		previewLines: "Líneas de vista previa",
+		showTime: "Mostrar hora",
+		excludedFolders: "Carpetas excluidas",
+		fileTypes: "Tipos de archivo a mostrar"
 	},
 	fr: {
 		recentNotes: "Notes récentes",
@@ -140,11 +207,33 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Aller à la note suivante",
 		moveToPreviousPage: "Aller à la page précédente",
 		moveToNextPage: "Aller à la page suivante",
+		
 		today: "Aujourd'hui",
 		yesterday: "Hier",
 		previous7days: "7 derniers jours",
 		previous30days: "30 derniers jours",
-		daysago: "jours"
+		daysago: "jours",
+		density: "Densité",
+		comfortable: "Confortable",
+		compact: "Compact",
+		densityDesc: "Choisissez entre l'affichage confortable (par défaut) ou compact",
+		showThumbnail: "Afficher la miniature",
+		showThumbnailDesc: "Affiche la première image de la note comme miniature",
+		thumbnailProperty: "Propriété de la miniature",
+		thumbnailPropertyDesc: "Nom de la propriété à utiliser pour l'image miniature",
+		thumbnailPosition: "Position de la miniature",
+		thumbnailPositionDesc: "Choisissez si la miniature doit être à gauche ou à droite",
+		left: "Gauche",
+		right: "Droite",
+		thumbnails: "Miniatures",
+		pageStepSize: "Taille du pas de page",
+		pageStepSizeDesc: "Nombre de notes à sauter lors de l'utilisation de Ctrl+PageUp/PageDown",
+		dateFormat: "Format de date",
+		maxNotesToShow: "Nombre maximal de notes",
+		previewLines: "Lignes d'aperçu",
+		showTime: "Afficher l'heure",
+		excludedFolders: "Dossiers exclus",
+		fileTypes: "Types de fichiers à afficher"
 	},
 	de: {
 		recentNotes: "Aktuelle Notizen",
@@ -159,6 +248,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Zur nächsten Notiz",
 		moveToPreviousPage: "Eine Seite nach oben",
 		moveToNextPage: "Eine Seite nach unten",
+		
 		today: "Heute",
 		yesterday: "Gestern",
 		previous7days: "Letzte 7 Tage",
@@ -178,7 +268,35 @@ const LOCALES: Record<string, Record<string, string>> = {
 		right: "Rechts",
 		thumbnails: "Vorschaubilder",
 		pageStepSize: "Sprungdistanz",
-		pageStepSizeDesc: "Anzahl der Notizen, die bei Verwendung von Strg+BildAuf/BildAb übersprungen werden"
+		pageStepSizeDesc: "Anzahl der Notizen, die bei Verwendung von Strg+BildAuf/BildAb übersprungen werden",
+		dateFormat: "Datumsformat",
+		dateFormatDesc: "Format für die Anzeige von Daten, die älter als 7 Tage sind",
+		maxNotesToShow: "Maximale Anzahl an Notizen",
+		maxNotesToShowDesc: "Wie viele aktuelle Notizen in der Ansicht angezeigt werden sollen",
+		previewLines: "Vorschauzeilen",
+		previewLinesDesc: "Anzahl der Textzeilen in der Vorschau (0-3)",
+		noPreview: "Keine Vorschau",
+		line: "Zeile",
+		lines: "Zeilen",
+		showTime: "Zeit anzeigen",
+		showTimeDesc: "Änderungszeitpunkt neben den Dateien anzeigen",
+		excludedFolders: "Ausgeschlossene Ordner",
+		excludedFoldersDesc: "Auszuschließende Ordner (einer pro Zeile)",
+		excludedFiles: "Ausgeschlossene Dateien",
+		excludedFilesDesc: "Auszuschließende Dateien (eine pro Zeile)",
+		excludedTags: "Ausgeschlossene Tags",
+		excludedTagsDesc: "Auszuschließende Tags (einer pro Zeile)",
+		customProperty: "Eigene Eigenschaft für Änderungsdatum",
+		customPropertyDesc: "Frontmatter-Eigenschaft, die für das Änderungsdatum verwendet werden soll",
+		fileTypes: "Anzuzeigende Dateitypen",
+		showMarkdown: "Markdown-Dateien anzeigen",
+		showImages: "Bilddateien anzeigen",
+		showPDF: "PDF-Dateien anzeigen",
+		showAudio: "Audiodateien anzeigen",
+		showVideo: "Videodateien anzeigen",
+		showCanvas: "Canvas-Dateien anzeigen",
+		showCSV: "CSV-Dateien anzeigen",
+		showBase: "Base-Dateien anzeigen"
 	},
 	it: {
 		recentNotes: "Note recenti",
@@ -193,11 +311,33 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Vai alla nota successiva",
 		moveToPreviousPage: "Vai alla pagina precedente",
 		moveToNextPage: "Vai alla pagina successiva",
+		
 		today: "Oggi",
 		yesterday: "Ieri",
 		previous7days: "Ultimi 7 giorni",
 		previous30days: "Ultimi 30 giorni",
-		daysago: "giorni fa"
+		daysago: "giorni fa",
+		density: "Densità",
+		comfortable: "Comoda",
+		compact: "Compatta",
+		densityDesc: "Scegli tra la visualizzazione comoda (predefinita) o compatta",
+		showThumbnail: "Mostra miniatura",
+		showThumbnailDesc: "Mostra la prima immagine della nota come miniatura",
+		thumbnailProperty: "Proprietà miniatura",
+		thumbnailPropertyDesc: "Nome della proprietà da utilizzare per l'immagine in miniatura",
+		thumbnailPosition: "Posizione miniatura",
+		thumbnailPositionDesc: "Scegli se la miniatura deve essere a sinistra o a destra",
+		left: "Sinistra",
+		right: "Destra",
+		thumbnails: "Miniature",
+		pageStepSize: "Ampiezza salto pagina",
+		pageStepSizeDesc: "Numero di note da saltare quando si usa Ctrl+PagSu/PagGiù",
+		dateFormat: "Formato data",
+		maxNotesToShow: "Note massime da mostrare",
+		previewLines: "Linee di anteprima",
+		showTime: "Mostra ora",
+		excludedFolders: "Cartelle escluse",
+		fileTypes: "Tipi di file da mostrare"
 	},
 	ja: {
 		recentNotes: "最近のノート",
@@ -212,11 +352,27 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "次のノートへ",
 		moveToPreviousPage: "前のページへ",
 		moveToNextPage: "次のページへ",
+		
 		today: "今日",
 		yesterday: "昨日",
 		previous7days: "過去7日間",
 		previous30days: "過去30日間",
-		daysago: "日前"
+		daysago: "日前",
+		density: "表示密度",
+		comfortable: "標準",
+		compact: "コンパクト",
+		densityDesc: "標準（デフォルト）またはコンパクト表示を選択してください",
+		showThumbnail: "サムネイルを表示",
+		showThumbnailDesc: "ノートの最初の画像をサムネイルとして表示します",
+		thumbnailProperty: "サムネイルのプロパティ",
+		thumbnailPropertyDesc: "サムネイル画像に使用するプロパティ名",
+		thumbnailPosition: "サムネイルの位置",
+		thumbnailPositionDesc: "サムネイルを左側に表示するか右側に表示するかを選択します",
+		left: "左",
+		right: "右",
+		thumbnails: "サムネイル",
+		pageStepSize: "ページ移動幅",
+		pageStepSizeDesc: "Ctrl+PageUp/PageDownを使用したときにスキップするノートの数"
 	},
 	ko: {
 		recentNotes: "최근 노트",
@@ -231,11 +387,27 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "다음 노트로",
 		moveToPreviousPage: "이전 페이지로",
 		moveToNextPage: "다음 페이지로",
+		
 		today: "오늘",
 		yesterday: "어제",
 		previous7days: "지난 7일",
 		previous30days: "지난 30일",
-		daysago: "일 전"
+		daysago: "일 전",
+		density: "표시 밀도",
+		comfortable: "보통",
+		compact: "조밀하게",
+		densityDesc: "보통(기본값) 또는 조밀하게 표시 중에서 선택하십시오",
+		showThumbnail: "썸네일 표시",
+		showThumbnailDesc: "노트의 첫 번째 이미지를 썸네일로 표시합니다",
+		thumbnailProperty: "썸네일 속성",
+		thumbnailPropertyDesc: "썸네일 이미지에 사용할 속성 이름",
+		thumbnailPosition: "썸네일 위치",
+		thumbnailPositionDesc: "썸네일을 왼쪽이나 오른쪽에 표시할지 선택하십시오",
+		left: "왼쪽",
+		right: "오른쪽",
+		thumbnails: "썸네일",
+		pageStepSize: "페이지 이동 단계",
+		pageStepSizeDesc: "Ctrl+PageUp/PageDown을 사용할 때 건너뛸 노트 수"
 	},
 	zh: {
 		recentNotes: "最近笔记",
@@ -250,11 +422,27 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "移至下一个笔记",
 		moveToPreviousPage: "移至上一页",
 		moveToNextPage: "移至下一页",
+		
 		today: "今天",
 		yesterday: "昨天",
 		previous7days: "最近7天",
 		previous30days: "最近30天",
-		daysago: "天前"
+		daysago: "天前",
+		density: "显示密度",
+		comfortable: "舒适",
+		compact: "紧凑",
+		densityDesc: "选择舒适（默认）或紧凑显示",
+		showThumbnail: "显示缩略图",
+		showThumbnailDesc: "将笔记中的第一张图片显示为缩略图",
+		thumbnailProperty: "缩略图属性",
+		thumbnailPropertyDesc: "用于缩略图的属性名称",
+		thumbnailPosition: "缩略图位置",
+		thumbnailPositionDesc: "选择缩略图显示在左侧还是右侧",
+		left: "左侧",
+		right: "右侧",
+		thumbnails: "缩略图",
+		pageStepSize: "页面跳转步长",
+		pageStepSizeDesc: "使用 Ctrl+PageUp/PageDown 时跳过的笔记数量"
 	},
 	ru: {
 		recentNotes: "Недавние заметки",
@@ -269,11 +457,33 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "К следующей заметке",
 		moveToPreviousPage: "На страницу вверх",
 		moveToNextPage: "На страницу вниз",
+		
 		today: "Сегодня",
 		yesterday: "Вчера",
 		previous7days: "Последние 7 дней",
 		previous30days: "Последние 30 дней",
-		daysago: "дней назад"
+		daysago: "дней назад",
+		density: "Плотность",
+		comfortable: "Уютный",
+		compact: "Компактный",
+		densityDesc: "Выберите между уютным (по умолчанию) или компактным отображением",
+		showThumbnail: "Показывать миниатюры",
+		showThumbnailDesc: "Показывать первое изображение из заметки как миниатюру",
+		thumbnailProperty: "Свойство миниатюры",
+		thumbnailPropertyDesc: "Имя свойства для использования в качестве миниатюры",
+		thumbnailPosition: "Положение миниатюры",
+		thumbnailPositionDesc: "Выберите, должна ли миниатюра быть слева или справа",
+		left: "Слева",
+		right: "Справа",
+		thumbnails: "Миниатюры",
+		pageStepSize: "Шаг страницы",
+		pageStepSizeDesc: "Количество заметок для пропуска при использовании Ctrl+PageUp/PageDown",
+		dateFormat: "Формат даты",
+		maxNotesToShow: "Максимум заметок для показа",
+		previewLines: "Строк предпросмотра",
+		showTime: "Показывать время",
+		excludedFolders: "Исключенные папки",
+		fileTypes: "Типы файлов для показа"
 	},
 	pt: {
 		recentNotes: "Notas recentes",
@@ -286,11 +496,29 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Abrir em novo separador",
 		moveToPrevious: "Ir para a nota anterior",
 		moveToNext: "Ir para a próxima nota",
+		moveToPreviousPage: "Ir para a página anterior",
+		moveToNextPage: "Ir para a página seguinte",
+		
 		today: "Hoje",
 		yesterday: "Ontem",
 		previous7days: "Últimos 7 dias",
 		previous30days: "Últimos 30 dias",
-		daysago: "dias atrás"
+		daysago: "dias atrás",
+		density: "Densidade",
+		comfortable: "Confortável",
+		compact: "Compacto",
+		densityDesc: "Escolha entre a exibição confortável (padrão) ou compacta",
+		showThumbnail: "Mostrar miniatura",
+		showThumbnailDesc: "Mostrar a primeira imagem da nota como miniatura",
+		thumbnailProperty: "Propriedade da miniatura",
+		thumbnailPropertyDesc: "Nome da propriedade a utilizar para a imagem da miniatura",
+		thumbnailPosition: "Posição da miniatura",
+		thumbnailPositionDesc: "Escolha se a miniatura deve estar à esquerda ou à direita",
+		left: "Esquerda",
+		right: "Direita",
+		thumbnails: "Miniaturas",
+		pageStepSize: "Tamanho do passo de página",
+		pageStepSizeDesc: "Número de notas a saltar ao usar Ctrl+PageUp/PageDown"
 	},
 	"pt-br": {
 		recentNotes: "Notas recentes",
@@ -303,11 +531,29 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Abrir em nova aba",
 		moveToPrevious: "Ir para nota anterior",
 		moveToNext: "Ir para próxima nota",
+		moveToPreviousPage: "Ir para a página anterior",
+		moveToNextPage: "Ir para a página seguinte",
+		
 		today: "Hoje",
 		yesterday: "Ontem",
 		previous7days: "Últimos 7 dias",
 		previous30days: "Últimos 30 dias",
-		daysago: "dias atrás"
+		daysago: "dias atrás",
+		density: "Densidade",
+		comfortable: "Confortável",
+		compact: "Compacto",
+		densityDesc: "Escolha entre a exibição confortável (padrão) ou compacta",
+		showThumbnail: "Exibir miniatura",
+		showThumbnailDesc: "Exibe a primeira imagem da nota como miniatura",
+		thumbnailProperty: "Propriedade da miniatura",
+		thumbnailPropertyDesc: "Nome da propriedade a ser usada para a imagem da miniatura",
+		thumbnailPosition: "Posição da miniatura",
+		thumbnailPositionDesc: "Escolha se a miniatura deve ficar à esquerda ou à direita",
+		left: "Esquerda",
+		right: "Direita",
+		thumbnails: "Miniaturas",
+		pageStepSize: "Tamanho do salto de página",
+		pageStepSizeDesc: "Número de notas a saltar ao usar Ctrl+PageUp/PageDown"
 	},
 	hu: {
 		recentNotes: "Legutóbbi jegyzetek",
@@ -320,11 +566,29 @@ const LOCALES: Record<string, Record<string, string>> = {
 		openInNewTab: "Megnyitás új lapon",
 		moveToPrevious: "Ugrás az előző jegyzetre",
 		moveToNext: "Ugrás az következő jegyzetre",
+		moveToPreviousPage: "Ugrás az előző oldalra",
+		moveToNextPage: "Ugrás a következő oldalra",
+		
 		today: "Ma",
 		yesterday: "Tegnap",
 		previous7days: "Utolsó 7 nap",
 		previous30days: "Utolsó 30 nap",
-		daysago: "napja"
+		daysago: "napja",
+		density: "Sűrűség",
+		comfortable: "Kényelmes",
+		compact: "Kompakt",
+		densityDesc: "Válassz a kényelmes (alapértelmezett) vagy a kompakt megjelenítés között",
+		showThumbnail: "Vorschaubild mutatása",
+		showThumbnailDesc: "A jegyzet első képének megjelenítése miniatűrként",
+		thumbnailProperty: "Vorschaubild tulajdonság",
+		thumbnailPropertyDesc: "A miniatűrhöz használt tulajdonság neve",
+		thumbnailPosition: "Vorschaubild pozíciója",
+		thumbnailPositionDesc: "Válaszd ki, hogy a miniatűr bal vagy jobb oldalon legyen-e",
+		left: "Bal",
+		right: "Jobb",
+		thumbnails: "Miniatűrök",
+		pageStepSize: "Oldallépés mérete",
+		pageStepSizeDesc: "A Ctrl+PageUp/PageDown billentyűkombinációval átugrandó jegyzetek száma"
 	}
 };
 
@@ -431,6 +695,7 @@ class RecentNotesView extends ItemView {
 			this.openFile(files[nextIndex]);
 		}
 	}
+
 
 	private static fileModifiedTimes = new Map<TFile, number>(); // UNIX timestamp, in milliseconds
 
@@ -1656,6 +1921,7 @@ export default class RecentNotesPlugin extends Plugin {
 			hotkeys: [{ modifiers: ['Mod'], key: 'PageDown' }]
 		});
 
+
 		this.addSettingTab(new RecentNotesSettingTab(this.app, this));
 	}
 
@@ -1706,8 +1972,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Date format')
-			.setDesc('Format for displaying dates older than 7 days')
+			.setName(this.plugin.translate('dateFormat'))
+			.setDesc(this.plugin.translate('dateFormatDesc'))
 			.addDropdown(dropdown => dropdown
 				.addOption('RELATIVE', 'X days ago (relative)')
 				.addOption('DD/MM/YYYY', '19/08/2025')
@@ -1729,8 +1995,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Maximum notes to show')
-			.setDesc('How many recent notes to display in the view')
+			.setName(this.plugin.translate('maxNotesToShow'))
+			.setDesc(this.plugin.translate('maxNotesToShowDesc'))
 			.addText(text => text
 				.setPlaceholder('100')
 				.setValue(this.plugin.settings.maxNotesToShow.toString())
@@ -1746,13 +2012,13 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Preview lines')
-			.setDesc('Number of text lines to show in the preview (0-3)')
+			.setName(this.plugin.translate('previewLines'))
+			.setDesc(this.plugin.translate('previewLinesDesc'))
 			.addDropdown(dropdown => dropdown
-				.addOption('0', 'No preview')
-				.addOption('1', '1 line')
-				.addOption('2', '2 lines')
-				.addOption('3', '3 lines')
+				.addOption('0', this.plugin.translate('noPreview'))
+				.addOption('1', '1 ' + this.plugin.translate('line'))
+				.addOption('2', '2 ' + this.plugin.translate('lines'))
+				.addOption('3', '3 ' + this.plugin.translate('lines'))
 				.setValue(this.plugin.settings.previewLines.toString())
 				.onChange(async (value) => {
 					this.plugin.settings.previewLines = parseInt(value);
@@ -1765,8 +2031,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show time')
-			.setDesc('Show modification time next to files (set both this and Preview lines to 0 for minimal view)')
+			.setName(this.plugin.translate('showTime'))
+			.setDesc(this.plugin.translate('showTimeDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showTime)
 				.onChange(async (value) => {
@@ -1805,8 +2071,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Excluded folders')
-			.setDesc('List of folders to exclude from recent files (one per line)')
+			.setName(this.plugin.translate('excludedFolders'))
+			.setDesc(this.plugin.translate('excludedFoldersDesc'))
 			.addTextArea(text => text
 				.setPlaceholder('folder1\nfolder2/subfolder')
 				.setValue(this.plugin.settings.excludedFolders.join('\n'))
@@ -1822,8 +2088,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Excluded files')
-			.setDesc('List of specific files to exclude from recent files (one per line, full path required)')
+			.setName(this.plugin.translate('excludedFiles'))
+			.setDesc(this.plugin.translate('excludedFilesDesc'))
 			.addTextArea(text => text
 				.setPlaceholder('folder1/note.md\nfolder2/image.png')
 				.setValue(this.plugin.settings.excludedFiles.join('\n'))
@@ -1839,8 +2105,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Excluded tags')
-			.setDesc('List of tags to exclude from recent files (one per line)')
+			.setName(this.plugin.translate('excludedTags'))
+			.setDesc(this.plugin.translate('excludedTagsDesc'))
 			.addTextArea(text => text
 				.setPlaceholder('#archive\n#private')
 				.setValue(this.plugin.settings.excludedTags.join('\n'))
@@ -1856,8 +2122,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Custom Modified Date property')
-			.setDesc('Specify a frontmatter property to use for modification date (leave empty to use file modification date)')
+			.setName(this.plugin.translate('customProperty'))
+			.setDesc(this.plugin.translate('customPropertyDesc'))
 			.addText(text => text
 				.setPlaceholder('modified')
 				.setValue(this.plugin.settings.propertyModified.toString())
@@ -1869,11 +2135,11 @@ class RecentNotesSettingTab extends PluginSettingTab {
 					}
 				}));
 
-		containerEl.createEl('h3', { text: 'File types to show' });
+		containerEl.createEl('h3', { text: this.plugin.translate('fileTypes') });
 
 		new Setting(containerEl)
-			.setName('Show Markdown files')
-			.setDesc('Show .md files in the recent list')
+			.setName(this.plugin.translate('showMarkdown'))
+			.setDesc(this.plugin.translate('showMarkdownDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showMarkdownFiles)
 				.onChange(async (value) => {
@@ -1885,8 +2151,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show Image files')
-			.setDesc('Show image files (png, jpg, gif, etc.) in the recent list')
+			.setName(this.plugin.translate('showImages'))
+			.setDesc(this.plugin.translate('showImagesDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showImageFiles)
 				.onChange(async (value) => {
@@ -1898,8 +2164,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show PDF files')
-			.setDesc('Show .pdf files in the recent list')
+			.setName(this.plugin.translate('showPDF'))
+			.setDesc(this.plugin.translate('showPDFDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showPDFFiles)
 				.onChange(async (value) => {
@@ -1911,8 +2177,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show Audio files')
-			.setDesc('Show audio files (mp3, wav, etc.) in the recent list')
+			.setName(this.plugin.translate('showAudio'))
+			.setDesc(this.plugin.translate('showAudioDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showAudioFiles)
 				.onChange(async (value) => {
@@ -1924,8 +2190,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show Video files')
-			.setDesc('Show video files (mp4, webm, etc.) in the recent list')
+			.setName(this.plugin.translate('showVideo'))
+			.setDesc(this.plugin.translate('showVideoDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showVideoFiles)
 				.onChange(async (value) => {
@@ -1937,8 +2203,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show Canvas files')
-			.setDesc('Show .canvas files in the recent list')
+			.setName(this.plugin.translate('showCanvas'))
+			.setDesc(this.plugin.translate('showCanvasDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showCanvasFiles)
 				.onChange(async (value) => {
@@ -1950,8 +2216,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show CSV files')
-			.setDesc('Show .csv files in the recent list')
+			.setName(this.plugin.translate('showCSV'))
+			.setDesc(this.plugin.translate('showCSVDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showCSVFiles)
 				.onChange(async (value) => {
@@ -1963,8 +2229,8 @@ class RecentNotesSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show Base files')
-			.setDesc('Show .base files in the recent list')
+			.setName(this.plugin.translate('showBase'))
+			.setDesc(this.plugin.translate('showBaseDesc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showBaseFiles)
 				.onChange(async (value) => {
