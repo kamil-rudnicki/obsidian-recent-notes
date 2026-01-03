@@ -1997,30 +1997,42 @@ export default class RecentNotesPlugin extends Plugin {
 		this.addCommand({
 			id: 'move-to-previous-recent-note',
 			name: this.translate('moveToPrevious'),
-			callback: () => {
-				if (this.view) {
-					this.view.moveToAdjacentNote('up');
+			checkCallback: (checking: boolean) => {
+				if (this.isViewVisible()) {
+					if (!checking) {
+						this.view.moveToAdjacentNote('up');
+					}
+					return true;
 				}
+				return false;
 			},
 		});
 
 		this.addCommand({
 			id: 'move-to-next-recent-note',
 			name: this.translate('moveToNext'),
-			callback: () => {
-				if (this.view) {
-					this.view.moveToAdjacentNote('down');
+			checkCallback: (checking: boolean) => {
+				if (this.isViewVisible()) {
+					if (!checking) {
+						this.view.moveToAdjacentNote('down');
+					}
+					return true;
 				}
+				return false;
 			},
 		});
 
 		this.addCommand({
 			id: 'move-to-previous-page-recent-note',
 			name: this.translate('moveToPreviousPage'),
-			callback: () => {
-				if (this.view) {
-					this.view.moveToAdjacentNotePage('up');
+			checkCallback: (checking: boolean) => {
+				if (this.isViewVisible()) {
+					if (!checking) {
+						this.view.moveToAdjacentNotePage('up');
+					}
+					return true;
 				}
+				return false;
 			},
 			hotkeys: [{ modifiers: ['Mod'], key: 'PageUp' }]
 		});
@@ -2028,10 +2040,14 @@ export default class RecentNotesPlugin extends Plugin {
 		this.addCommand({
 			id: 'move-to-next-page-recent-note',
 			name: this.translate('moveToNextPage'),
-			callback: () => {
-				if (this.view) {
-					this.view.moveToAdjacentNotePage('down');
+			checkCallback: (checking: boolean) => {
+				if (this.isViewVisible()) {
+					if (!checking) {
+						this.view.moveToAdjacentNotePage('down');
+					}
+					return true;
 				}
+				return false;
 			},
 			hotkeys: [{ modifiers: ['Mod'], key: 'PageDown' }]
 		});
@@ -2039,16 +2055,25 @@ export default class RecentNotesPlugin extends Plugin {
 		this.addCommand({
 			id: 'move-to-start-recent-note',
 			name: this.translate('moveToStart'),
-			callback: async () => {
-				if (this.view) {
-					await this.view.moveToStart();
+			checkCallback: (checking: boolean) => {
+				if (this.isViewVisible()) {
+					if (!checking) {
+						this.view.moveToStart();
+					}
+					return true;
 				}
+				return false;
 			},
 			hotkeys: [{ modifiers: ['Mod'], key: 'Home' }]
 		});
 
 
 		this.addSettingTab(new RecentNotesSettingTab(this.app, this));
+	}
+
+	isViewVisible(): boolean {
+		const leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_RECENT_NOTES)[0];
+		return !!leaf && leaf.view.containerEl.isShown();
 	}
 
 	async activateView() {
