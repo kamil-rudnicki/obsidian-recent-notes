@@ -1190,6 +1190,7 @@ class RecentNotesView extends ItemView {
 				});
 				fileContainer.setAttribute('data-path', file.path);
 				fileContainer.setAttribute('data-thumbnail-position', this.plugin.settings.thumbnailPosition);
+				fileContainer.setAttribute('data-thumbnails-enabled', this.plugin.settings.showThumbnail.toString());
 				fileContainer.tabIndex = 0;
 
 				const itemWrapper = fileContainer.createEl('div', {
@@ -1228,6 +1229,7 @@ class RecentNotesView extends ItemView {
 					if (this.currentRefreshId !== refreshId) return;
 					
 					if (thumbnail) {
+						itemWrapper.addClass('has-thumbnail');
 						const thumbnailContainer = itemWrapper.createEl('div', {
 							cls: 'recent-note-thumbnail-container'
 						});
@@ -1243,15 +1245,18 @@ class RecentNotesView extends ItemView {
 							attr: { src: thumbnail },
 							cls: 'recent-note-thumbnail'
 						});
-					} else if (isCompact && showTime) {
-						// Show date even if no thumbnail in compact mode
-						const dateContainer = itemWrapper.createEl('div', {
-							cls: 'recent-note-thumbnail-container no-thumbnail'
-						});
-						dateContainer.createEl('div', {
-							text: dateText,
-							cls: 'recent-note-date-compact'
-						});
+					} else {
+						itemWrapper.addClass('no-thumbnail');
+						if (isCompact && showTime) {
+							// Show date even if no thumbnail in compact mode
+							const dateContainer = itemWrapper.createEl('div', {
+								cls: 'recent-note-thumbnail-container no-thumbnail'
+							});
+							dateContainer.createEl('div', {
+								text: dateText,
+								cls: 'recent-note-date-compact'
+							});
+						}
 					}
 				} else if (isCompact && showTime) {
 					// Show date even if thumbnails are disabled in compact mode
@@ -1354,6 +1359,7 @@ class RecentNotesView extends ItemView {
 			});
 			fileContainer.setAttribute('data-path', file.path);
 			fileContainer.setAttribute('data-thumbnail-position', this.plugin.settings.thumbnailPosition);
+			fileContainer.setAttribute('data-thumbnails-enabled', this.plugin.settings.showThumbnail.toString());
 			fileContainer.tabIndex = 0;
 
 			const itemWrapper = fileContainer.createEl('div', {
@@ -1392,6 +1398,7 @@ class RecentNotesView extends ItemView {
 				if (this.currentRefreshId !== refreshId) return;
 				
 				if (thumbnail) {
+					itemWrapper.addClass('has-thumbnail');
 					const thumbnailContainer = itemWrapper.createEl('div', {
 						cls: 'recent-note-thumbnail-container'
 					});
@@ -1407,15 +1414,18 @@ class RecentNotesView extends ItemView {
 						attr: { src: thumbnail },
 						cls: 'recent-note-thumbnail'
 					});
-				} else if (isCompact && showTime) {
-					// Show date even if no thumbnail in compact mode
-					const dateContainer = itemWrapper.createEl('div', {
-						cls: 'recent-note-thumbnail-container no-thumbnail'
-					});
-					dateContainer.createEl('div', {
-						text: dateText,
-						cls: 'recent-note-date-compact'
-					});
+				} else {
+					itemWrapper.addClass('no-thumbnail');
+					if (isCompact && showTime) {
+						// Show date even if no thumbnail in compact mode
+						const dateContainer = itemWrapper.createEl('div', {
+							cls: 'recent-note-thumbnail-container no-thumbnail'
+						});
+						dateContainer.createEl('div', {
+							text: dateText,
+							cls: 'recent-note-date-compact'
+						});
+					}
 				}
 			} else if (isCompact && showTime) {
 				// Show date even if thumbnails are disabled in compact mode

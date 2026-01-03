@@ -96,7 +96,7 @@ settings:
         description: Size of the thumbnail image (width and height)
         type: variable-number
         format: px
-        default: 80
+        default: 52
     -
         id: recent-notes-thumbnail-size-compact
         title: Thumbnail Size (Compact)
@@ -117,7 +117,7 @@ settings:
 body {
     --recent-notes-item-background-hover: transparent;
     --recent-notes-max-width: 500px;
-    --recent-notes-thumbnail-size: 80px;
+    --recent-notes-thumbnail-size: 52px;
     --recent-notes-thumbnail-size-compact: 40px;
     --recent-notes-header-font-size: 12px;
     --recent-notes-header-font-weight: 500;
@@ -137,6 +137,16 @@ body {
     align-items: center;
     padding: 10px 18px;
     width: 100%;
+}
+
+/* When thumbnails are enabled and note has a thumbnail - reduce padding */
+.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
+    padding: 6px 8px 6px 18px;
+}
+
+/* When thumbnails are enabled but note has no thumbnail - increase padding to match height */
+.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
+    padding: 16px 18px;
 }
 
 .recent-note-item[data-thumbnail-position="right"] .recent-note-item-wrapper {
@@ -285,6 +295,15 @@ body {
 body[data-recent-notes-density="compact"] div.recent-note-item-wrapper {
     padding: 5px;
     gap: 8px;
+}
+
+/* Compact mode with thumbnails enabled - adjust padding for consistent height */
+body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
+    padding: 5px;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
+    padding: 20px 5px;
 }
 
 body[data-recent-notes-density="compact"] .recent-note-thumbnail-container {
