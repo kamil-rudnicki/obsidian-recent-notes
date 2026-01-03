@@ -634,6 +634,7 @@ class RecentNotesView extends ItemView {
 	private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 	private lastEditedFile: string | null = null;
 	private currentFileIndex: number = -1;
+	private currentRefreshId: number = 0;
 
 	constructor(leaf: WorkspaceLeaf, plugin: RecentNotesPlugin) {
 		super(leaf);
@@ -645,20 +646,27 @@ class RecentNotesView extends ItemView {
 		const files = this.getRecentFiles();
 		if (files.length === 0) return;
 
-		const activeFile = this.app.workspace.getActiveFile();
-		if (!activeFile) {
-			// If no file is active, select the first or last file depending on direction
-			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
-			this.openFile(targetFile);
-			return;
+		// Try to find current file index based on focused element first
+		const focusedElement = document.activeElement;
+		const focusedFilePath = focusedElement?.closest('.recent-note-item')?.getAttribute('data-path');
+		
+		let currentIndex = -1;
+		if (focusedFilePath) {
+			currentIndex = files.findIndex(f => f.path === focusedFilePath);
 		}
 
-		// Find current file index
-		const currentIndex = files.findIndex(f => f.path === activeFile.path);
+		// If no focused element or not in list, fallback to active file
 		if (currentIndex === -1) {
-			// Current file not in list, select first or last file
+			const activeFile = this.app.workspace.getActiveFile();
+			if (activeFile) {
+				currentIndex = files.findIndex(f => f.path === activeFile.path);
+			}
+		}
+
+		if (currentIndex === -1) {
+			// If still not found, select first or last file depending on direction
 			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
-			this.openFile(targetFile);
+			this.openFile(targetFile, true);
 			return;
 		}
 
@@ -673,24 +681,33 @@ class RecentNotesView extends ItemView {
 			nextIndex = 0;
 		}
 
-		this.openFile(files[nextIndex]);
+		this.openFile(files[nextIndex], true);
 	}
 
 	public moveToAdjacentNotePage(direction: 'up' | 'down'): void {
 		const files = this.getRecentFiles();
 		if (files.length === 0) return;
 
-		const activeFile = this.app.workspace.getActiveFile();
-		if (!activeFile) {
-			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
-			this.openFile(targetFile);
-			return;
+		// Try to find current file index based on focused element first
+		const focusedElement = document.activeElement;
+		const focusedFilePath = focusedElement?.closest('.recent-note-item')?.getAttribute('data-path');
+		
+		let currentIndex = -1;
+		if (focusedFilePath) {
+			currentIndex = files.findIndex(f => f.path === focusedFilePath);
 		}
 
-		const currentIndex = files.findIndex(f => f.path === activeFile.path);
+		// If no focused element or not in list, fallback to active file
+		if (currentIndex === -1) {
+			const activeFile = this.app.workspace.getActiveFile();
+			if (activeFile) {
+				currentIndex = files.findIndex(f => f.path === activeFile.path);
+			}
+		}
+
 		if (currentIndex === -1) {
 			const targetFile = direction === 'up' ? files[files.length - 1] : files[0];
-			this.openFile(targetFile);
+			this.openFile(targetFile, true);
 			return;
 		}
 
@@ -705,7 +722,7 @@ class RecentNotesView extends ItemView {
 		}
 
 		if (nextIndex !== currentIndex) {
-			this.openFile(files[nextIndex]);
+			this.openFile(files[nextIndex], true);
 		}
 	}
 
@@ -770,16 +787,15 @@ class RecentNotesView extends ItemView {
 		return [...pinnedFiles, ...unpinnedFiles];
 	}
 
-	private async openFile(file: TFile): Promise<void> {
-		const leaf = this.app.workspace.getMostRecentLeaf();
+	private async openFile(file: TFile, keepFocus: boolean = false, newTab: boolean = false): Promise<void> {
+		const leaf = this.app.workspace.getLeaf(newTab);
 		if (leaf) {
-			await leaf.openFile(file);
-			this.scrollToActiveNote();
+			await leaf.openFile(file, { active: !keepFocus });
 		}
 	}
 
 	private scrollToActiveNote() {
-		const activeItem = this.containerEl.querySelector('.recent-note-item.is-active');
+		const activeItem = this.containerEl.querySelector('.recent-note-item.is-active') as HTMLElement;
 		if (activeItem) {
 			activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 		}
@@ -1107,9 +1123,10 @@ class RecentNotesView extends ItemView {
 	private scrollToTodaySection() {
 		const container = this.containerEl.children[1];
 		const sections = Array.from(container.querySelectorAll('h6'));
+		const todayText = this.plugin.translate('today');
 		for (const section of sections) {
-			if (section.textContent === 'Today') {
-				// Only scroll if current scroll position is more than 1700px
+			if (section.textContent === todayText) {
+				// Only scroll if current scroll position is more than 300px
 				if (container.scrollTop > 300) {
 					section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 				}
@@ -1120,7 +1137,14 @@ class RecentNotesView extends ItemView {
 
 	async refreshView() {
 		const container = this.containerEl.children[1];
+		if (!container) return;
+
+		const refreshId = ++this.currentRefreshId;
 		const scrollTop = container.scrollTop;
+		const focusedElement = document.activeElement;
+		const focusedFilePath = focusedElement?.closest('.recent-note-item')?.getAttribute('data-path');
+		const oldActiveFilePath = this.lastActiveFile;
+		
 		container.empty();
 		
 		// Apply density setting to body
@@ -1164,7 +1188,9 @@ class RecentNotesView extends ItemView {
 				const fileContainer = container.createEl('div', { 
 					cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 				});
+				fileContainer.setAttribute('data-path', file.path);
 				fileContainer.setAttribute('data-thumbnail-position', this.plugin.settings.thumbnailPosition);
+				fileContainer.tabIndex = 0;
 
 				const itemWrapper = fileContainer.createEl('div', {
 					cls: 'recent-note-item-wrapper'
@@ -1199,6 +1225,8 @@ class RecentNotesView extends ItemView {
 
 				if (this.plugin.settings.showThumbnail) {
 					const thumbnail = await this.getThumbnail(file);
+					if (this.currentRefreshId !== refreshId) return;
+					
 					if (thumbnail) {
 						const thumbnailContainer = itemWrapper.createEl('div', {
 							cls: 'recent-note-thumbnail-container'
@@ -1283,6 +1311,8 @@ class RecentNotesView extends ItemView {
 					// Only show preview if previewLines > 0
 					if (this.plugin.settings.previewLines > 0) {
 						const firstLine = await this.getFirstLineOfFile(file);
+						if (this.currentRefreshId !== refreshId) return;
+						
 						const previewContainer = infoContainer.createEl('div', {
 							cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 						});
@@ -1322,7 +1352,9 @@ class RecentNotesView extends ItemView {
 			const fileContainer = container.createEl('div', { 
 				cls: `recent-note-item ${activeFilePath === file.path ? 'is-active' : ''}`
 			});
+			fileContainer.setAttribute('data-path', file.path);
 			fileContainer.setAttribute('data-thumbnail-position', this.plugin.settings.thumbnailPosition);
+			fileContainer.tabIndex = 0;
 
 			const itemWrapper = fileContainer.createEl('div', {
 				cls: 'recent-note-item-wrapper'
@@ -1357,6 +1389,8 @@ class RecentNotesView extends ItemView {
 
 			if (this.plugin.settings.showThumbnail) {
 				const thumbnail = await this.getThumbnail(file);
+				if (this.currentRefreshId !== refreshId) return;
+				
 				if (thumbnail) {
 					const thumbnailContainer = itemWrapper.createEl('div', {
 						cls: 'recent-note-thumbnail-container'
@@ -1415,6 +1449,8 @@ class RecentNotesView extends ItemView {
 				if (this.plugin.settings.previewLines > 0) {
 					const hasMultipleLines = this.plugin.settings.previewLines > 1;
 					const firstLine = await this.getFirstLineOfFile(file);
+					if (this.currentRefreshId !== refreshId) return;
+					
 					const previewContainer = contentContainer.createEl('div', {
 						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
@@ -1441,6 +1477,8 @@ class RecentNotesView extends ItemView {
 				// Only show preview if previewLines > 0
 				if (this.plugin.settings.previewLines > 0) {
 					const firstLine = await this.getFirstLineOfFile(file);
+					if (this.currentRefreshId !== refreshId) return;
+					
 					const previewContainer = infoContainer.createEl('div', {
 						cls: `recent-note-preview ${hasMultipleLines ? 'has-multiple-lines' : ''}`
 					});
@@ -1472,6 +1510,28 @@ class RecentNotesView extends ItemView {
 			container.scrollTop = scrollTop;
 		}
 		
+		// Restore focus if it was on a file item
+		if (focusedFilePath) {
+			let itemPathToFocus = focusedFilePath;
+			
+			// If focus was on the previously active file, and the active file has changed,
+			// follow the focus to the new active file.
+			if (focusedFilePath === oldActiveFilePath && activeFilePath && activeFilePath !== oldActiveFilePath) {
+				itemPathToFocus = activeFilePath;
+			}
+
+			const itemToFocus = container.querySelector(`.recent-note-item[data-path="${itemPathToFocus.replace(/"/g, '\\"')}"]`) as HTMLElement;
+			if (itemToFocus) {
+				itemToFocus.focus();
+			}
+		} else if (activeFilePath && this.containerEl.contains(document.activeElement)) {
+			// If no specific item was focused but the view had focus, focus the active note
+			const itemToFocus = container.querySelector(`.recent-note-item[data-path="${activeFilePath.replace(/"/g, '\\"')}"]`) as HTMLElement;
+			if (itemToFocus) {
+				itemToFocus.focus();
+			}
+		}
+
 		// Ensure the active note is visible
 		this.scrollToActiveNote();
 		
@@ -1568,9 +1628,7 @@ class RecentNotesView extends ItemView {
 				event.preventDefault();
 				event.stopPropagation();
 				
-				const leaf = this.app.workspace.getLeaf(false);
-				await leaf.openFile(file);
-				this.scrollToActiveNote();
+				await this.openFile(file);
 				lastTapTime = Date.now(); // Record when we opened the file
 				
 				if (file.extension !== 'md') {
@@ -1595,8 +1653,7 @@ class RecentNotesView extends ItemView {
 						.setIcon('open-elsewhere-glyph')
 						.setTitle(this.plugin.translate('openInNewTab'))
 						.onClick(async () => {
-							const leaf = this.app.workspace.getLeaf(true);
-							await leaf.openFile(file);
+							await this.openFile(file, false, true);
 							
 							// Block all clicks and context menus temporarily after opening
 							blockEventsTemporarily();
@@ -1657,14 +1714,35 @@ class RecentNotesView extends ItemView {
 
 			// Middle mouse button click or Ctrl/Meta key pressed to open in new tab
 			const openInNewTab = event.button === 1 || event.metaKey || event.ctrlKey;
-			const leaf = this.app.workspace.getLeaf(openInNewTab);
-			await leaf.openFile(file);
-			this.scrollToActiveNote();
+			await this.openFile(file, !openInNewTab, openInNewTab);
 			
 			if (file.extension !== 'md') {
 				setTimeout(() => {
 					this.debouncedRefresh();
 				}, 50);
+			}
+		});
+
+		// Add keydown listener for accessibility
+		fileContainer.addEventListener('keydown', async (event: KeyboardEvent) => {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				event.stopPropagation();
+				
+				const openInNewTab = event.metaKey || event.ctrlKey;
+				await this.openFile(file, !openInNewTab, openInNewTab);
+				
+				if (file.extension !== 'md') {
+					setTimeout(() => {
+						this.debouncedRefresh();
+					}, 50);
+				}
+			} else if (event.key === 'ArrowUp') {
+				event.preventDefault();
+				this.moveToAdjacentNote('up');
+			} else if (event.key === 'ArrowDown') {
+				event.preventDefault();
+				this.moveToAdjacentNote('down');
 			}
 		});
 
@@ -1702,8 +1780,7 @@ class RecentNotesView extends ItemView {
 					.setIcon('open-elsewhere-glyph')
 					.setTitle(this.plugin.translate('openInNewTab'))
 					.onClick(async () => {
-						const leaf = this.app.workspace.getLeaf(true);
-						await leaf.openFile(file);
+						await this.openFile(file, false, true);
 						
 						// Block all clicks and context menus temporarily after opening
 						blockEventsTemporarily();
@@ -1807,9 +1884,19 @@ class RecentNotesView extends ItemView {
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
 				const activeFile = this.app.workspace.getActiveFile();
-				if (this.shouldRefreshForFile(activeFile)) {
+				if (activeFile && this.shouldRefreshForFile(activeFile)) {
+					// Always refresh when active file changes to update .is-active class
+					this.debouncedRefresh();
+				} else {
+					// Even if it shouldn't be in the list, refresh to remove .is-active from old file
 					this.debouncedRefresh();
 				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on('file-open', () => {
+				this.debouncedRefresh();
 			})
 		);
 	}
@@ -1981,6 +2068,13 @@ export default class RecentNotesPlugin extends Plugin {
 		
 		if (leaf) {
 			workspace.revealLeaf(leaf);
+			// Focus the active item in the list after a short delay to allow for rendering
+			setTimeout(() => {
+				const activeItem = leaf?.view.containerEl.querySelector('.recent-note-item.is-active') as HTMLElement;
+				if (activeItem) {
+					activeItem.focus();
+				}
+			}, 150);
 		}
 	}
 

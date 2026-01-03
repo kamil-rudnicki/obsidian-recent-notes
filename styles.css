@@ -265,6 +265,7 @@ body {
     background-color: var(--recent-notes-hover-color, var(--recent-notes-item-background-hover));
     color: var(--recent-notes-hover-text-color);
 }
+
 .recent-note-item:hover:not(.is-active) .recent-note-date {
     color: var(--recent-notes-hover-text-color, var(--text-muted));
 }
