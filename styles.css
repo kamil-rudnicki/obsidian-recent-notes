@@ -1,7 +1,7 @@
 /* @settings
 
 name: Recent Notes
-id: mike-recent-notes
+id: recent-notes
 settings:
     -
         id: appearance-group
@@ -288,7 +288,26 @@ body[data-recent-notes-density="compact"] div.recent-note-item-wrapper {
 
 body[data-recent-notes-density="compact"] .recent-note-thumbnail-container {
     flex: 0 0 var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
+    height: auto;
+    min-height: var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: transparent;
+    overflow: visible;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-thumbnail {
+    width: var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
     height: var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
+    border-radius: 4px;
+}
+
+.recent-note-date-compact {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-bottom: 2px;
 }
 
 body[data-recent-notes-density="compact"] .recent-notes-view h6 {
@@ -312,15 +331,6 @@ body[data-recent-notes-density="compact"] .recent-note-title {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: clip;
-    order: 1;
-}
-
-body[data-recent-notes-density="compact"] .recent-note-date {
-    color: gray;
-    font-size: 0.8em;
-    white-space: nowrap; 
-    margin-left: 8px;
-    order: 2;
 }
 
 body[data-recent-notes-density="compact"] .recent-note-preview {

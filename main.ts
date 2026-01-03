@@ -24,6 +24,7 @@ interface RecentNotesSettings {
 	showThumbnail: boolean;
 	thumbnailProperty: string;
 	thumbnailPosition: 'left' | 'right';
+	pageStepSize: number;
 }
 
 const DEFAULT_SETTINGS: RecentNotesSettings = {
@@ -48,7 +49,8 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	openInNewTab: 'new',
 	showThumbnail: false,
 	thumbnailProperty: 'image',
-	thumbnailPosition: 'left'
+	thumbnailPosition: 'left',
+	pageStepSize: 10
 }
 
 // Insert localization translations
@@ -83,7 +85,9 @@ const LOCALES: Record<string, Record<string, string>> = {
 		thumbnailPositionDesc: "Choose whether the thumbnail should be on the left or right",
 		left: "Left",
 		right: "Right",
-		thumbnails: "Thumbnails"
+		thumbnails: "Thumbnails",
+		pageStepSize: "Page step size",
+		pageStepSizeDesc: "Number of notes to skip when using Ctrl+PageUp/PageDown"
 	},
 	pl: {
 		recentNotes: "Ostatnie notatki",
@@ -162,17 +166,19 @@ const LOCALES: Record<string, Record<string, string>> = {
 		daysago: "Tage her",
 		density: "Dichte",
 		comfortable: "Komfortabel",
+		showThumbnailDesc: "Zeigt das erste Bild der Notiz als Vorschaubild an",
 		compact: "Kompakt",
 		densityDesc: "Wählen Sie zwischen komfortabler (Standard) oder kompakter Anzeige",
 		showThumbnail: "Vorschaubild anzeigen",
-		showThumbnailDesc: "Zeigt das erste Bild der Notiz als Vorschaubild an",
 		thumbnailProperty: "Eigenschaft für Vorschaubild",
 		thumbnailPropertyDesc: "Name der Frontmatter-Eigenschaft, die für das Vorschaubild verwendet werden soll",
 		thumbnailPosition: "Position des Vorschaubildes",
 		thumbnailPositionDesc: "Wählen Sie, ob das Vorschaubild links oder rechts stehen soll",
 		left: "Links",
 		right: "Rechts",
-		thumbnails: "Vorschaubilder"
+		thumbnails: "Vorschaubilder",
+		pageStepSize: "Sprungdistanz",
+		pageStepSizeDesc: "Anzahl der Notizen, die bei Verwendung von Strg+BildAuf/BildAb übersprungen werden"
 	},
 	it: {
 		recentNotes: "Note recenti",
@@ -411,8 +417,8 @@ class RecentNotesView extends ItemView {
 			return;
 		}
 
-		// Skip 5 notes for page up/down
-		const pageSize = 5;
+		// Skip notes based on setting for page up/down
+		const pageSize = this.plugin.settings.pageStepSize;
 		let nextIndex = direction === 'up' ? currentIndex - pageSize : currentIndex + pageSize;
 		
 		if (nextIndex < 0) {
@@ -563,6 +569,7 @@ class RecentNotesView extends ItemView {
 
 	public clearCache(): void {
 		this.firstLineCache.clear();
+		this.thumbnailCache.clear();
 	}
 
 	getViewType(): string {
@@ -870,49 +877,79 @@ class RecentNotesView extends ItemView {
 					cls: 'recent-note-item-wrapper'
 				});
 
+				// Get date text first
+				const now = moment();
+				let dateText;
+				const modifiedTime = this.getModifiedTime(file, true);
+				if (moment(modifiedTime).isSame(now, 'day') || moment(modifiedTime).isSame(now.clone().subtract(1, 'day'), 'day')) {
+					dateText = moment(modifiedTime).format('HH:mm');
+				} else if (moment(modifiedTime).isAfter(now.clone().subtract(7, 'days'))) {
+					if (this.plugin.settings.dateFormat === 'RELATIVE') {
+						const daysAgo = now.diff(moment(modifiedTime), 'days');
+						dateText = daysAgo === 0 ? this.plugin.translate('today') : 
+							   daysAgo === 1 ? this.plugin.translate('yesterday') : 
+							   `${daysAgo} ${this.plugin.translate('daysago')}`;
+					} else {
+						dateText = moment(modifiedTime).format('dddd');
+					}
+				} else {
+					if (this.plugin.settings.dateFormat === 'RELATIVE') {
+						const daysAgo = now.diff(moment(modifiedTime), 'days');
+						dateText = `${daysAgo} ${this.plugin.translate('daysago')}`;
+					} else {
+						dateText = moment(modifiedTime).format(this.plugin.settings.dateFormat);
+					}
+				}
+
+				const isCompact = this.plugin.settings.density === 'compact';
+				const showTime = this.plugin.settings.showTime;
+
 				if (this.plugin.settings.showThumbnail) {
 					const thumbnail = await this.getThumbnail(file);
 					if (thumbnail) {
 						const thumbnailContainer = itemWrapper.createEl('div', {
 							cls: 'recent-note-thumbnail-container'
 						});
+
+						if (isCompact && showTime) {
+							thumbnailContainer.createEl('div', {
+								text: dateText,
+								cls: 'recent-note-date-compact'
+							});
+						}
+
 						thumbnailContainer.createEl('img', {
 							attr: { src: thumbnail },
 							cls: 'recent-note-thumbnail'
 						});
+					} else if (isCompact && showTime) {
+						// Show date even if no thumbnail in compact mode
+						const dateContainer = itemWrapper.createEl('div', {
+							cls: 'recent-note-thumbnail-container no-thumbnail'
+						});
+						dateContainer.createEl('div', {
+							text: dateText,
+							cls: 'recent-note-date-compact'
+						});
 					}
+				} else if (isCompact && showTime) {
+					// Show date even if thumbnails are disabled in compact mode
+					const dateContainer = itemWrapper.createEl('div', {
+						cls: 'recent-note-thumbnail-container no-thumbnail'
+					});
+					dateContainer.createEl('div', {
+						text: dateText,
+						cls: 'recent-note-date-compact'
+					});
 				}
 
 				const contentContainer = itemWrapper.createEl('div', {
 					cls: 'recent-note-content'
 				});
 
-				// Get date text first
-				const now = moment();
-				let dateText;
-				if (moment(this.getModifiedTime(file,true)).isSame(now, 'day') || moment(this.getModifiedTime(file,true)).isSame(now.clone().subtract(1, 'day'), 'day')) {
-					dateText = moment(this.getModifiedTime(file)).format('HH:mm');
-				} else if (moment(this.getModifiedTime(file)).isAfter(now.clone().subtract(7, 'days'))) {
-					if (this.plugin.settings.dateFormat === 'RELATIVE') {
-						const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
-						dateText = daysAgo === 0 ? this.plugin.translate('today') : 
-							   daysAgo === 1 ? this.plugin.translate('yesterday') : 
-							   `${daysAgo} ${this.plugin.translate('daysago')}`;
-					} else {
-						dateText = moment(this.getModifiedTime(file)).format('dddd');
-					}
-				} else {
-					if (this.plugin.settings.dateFormat === 'RELATIVE') {
-						const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
-						dateText = `${daysAgo} ${this.plugin.translate('daysago')}`;
-					} else {
-						dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
-					}
-				}
-
 				// Handle compact mode differently
-				if (this.plugin.settings.density === 'compact' && this.plugin.settings.showTime) {
-					// Create a header container for title and date
+				if (isCompact && showTime) {
+					// Create a header container for title
 					const headerContainer = contentContainer.createEl('div', {
 						cls: 'recent-note-header'
 					});
@@ -921,12 +958,6 @@ class RecentNotesView extends ItemView {
 					headerContainer.createEl('div', { 
 						text: this.getFileDisplayName(file),
 						cls: 'recent-note-title'
-					});
-					
-					// Add date to the header
-					headerContainer.createEl('span', {
-						text: dateText,
-						cls: 'recent-note-date'
 					});
 					
 					// Add preview in compact mode if enabled
@@ -972,7 +1003,7 @@ class RecentNotesView extends ItemView {
 					}
 
 					// Only show date if showTime is enabled
-					if (this.plugin.settings.showTime) {
+					if (showTime) {
 						const dateEl = infoContainer.createEl('span', {
 							text: dateText,
 							cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
@@ -1004,49 +1035,79 @@ class RecentNotesView extends ItemView {
 				cls: 'recent-note-item-wrapper'
 			});
 
+			// Get date text first
+			const now = moment();
+			let dateText;
+			const modifiedTime = this.getModifiedTime(file, true);
+			if (moment(modifiedTime).isSame(now, 'day') || moment(modifiedTime).isSame(now.clone().subtract(1, 'day'), 'day')) {
+				dateText = moment(modifiedTime).format('HH:mm');
+			} else if (moment(modifiedTime).isAfter(now.clone().subtract(7, 'days'))) {
+				if (this.plugin.settings.dateFormat === 'RELATIVE') {
+					const daysAgo = now.diff(moment(modifiedTime), 'days');
+					dateText = daysAgo === 0 ? this.plugin.translate('today') : 
+						   daysAgo === 1 ? this.plugin.translate('yesterday') : 
+						   `${daysAgo} ${this.plugin.translate('daysago')}`;
+				} else {
+					dateText = moment(modifiedTime).format('dddd');
+				}
+			} else {
+				if (this.plugin.settings.dateFormat === 'RELATIVE') {
+					const daysAgo = now.diff(moment(modifiedTime), 'days');
+					dateText = `${daysAgo} ${this.plugin.translate('daysago')}`;
+				} else {
+					dateText = moment(modifiedTime).format(this.plugin.settings.dateFormat);
+				}
+			}
+
+			const isCompact = this.plugin.settings.density === 'compact';
+			const showTime = this.plugin.settings.showTime;
+
 			if (this.plugin.settings.showThumbnail) {
 				const thumbnail = await this.getThumbnail(file);
 				if (thumbnail) {
 					const thumbnailContainer = itemWrapper.createEl('div', {
 						cls: 'recent-note-thumbnail-container'
 					});
+
+					if (isCompact && showTime) {
+						thumbnailContainer.createEl('div', {
+							text: dateText,
+							cls: 'recent-note-date-compact'
+						});
+					}
+
 					thumbnailContainer.createEl('img', {
 						attr: { src: thumbnail },
 						cls: 'recent-note-thumbnail'
 					});
+				} else if (isCompact && showTime) {
+					// Show date even if no thumbnail in compact mode
+					const dateContainer = itemWrapper.createEl('div', {
+						cls: 'recent-note-thumbnail-container no-thumbnail'
+					});
+					dateContainer.createEl('div', {
+						text: dateText,
+						cls: 'recent-note-date-compact'
+					});
 				}
+			} else if (isCompact && showTime) {
+				// Show date even if thumbnails are disabled in compact mode
+				const dateContainer = itemWrapper.createEl('div', {
+					cls: 'recent-note-thumbnail-container no-thumbnail'
+				});
+				dateContainer.createEl('div', {
+					text: dateText,
+					cls: 'recent-note-date-compact'
+				});
 			}
 
 			const contentContainer = itemWrapper.createEl('div', {
 				cls: 'recent-note-content'
 			});
 
-			// Get date text first
-			const now = moment();
-			let dateText;
-			if (moment(this.getModifiedTime(file,true)).isSame(now, 'day') || moment(this.getModifiedTime(file,true)).isSame(now.clone().subtract(1, 'day'), 'day')) {
-				dateText = moment(this.getModifiedTime(file)).format('HH:mm');
-			} else if (moment(this.getModifiedTime(file)).isAfter(now.clone().subtract(7, 'days'))) {
-				if (this.plugin.settings.dateFormat === 'RELATIVE') {
-					const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
-					dateText = daysAgo === 0 ? this.plugin.translate('today') : 
-						   daysAgo === 1 ? this.plugin.translate('yesterday') : 
-						   `${daysAgo} ${this.plugin.translate('daysago')}`;
-				} else {
-					dateText = moment(this.getModifiedTime(file)).format('dddd');
-				}
-			} else {
-				if (this.plugin.settings.dateFormat === 'RELATIVE') {
-					const daysAgo = now.diff(moment(this.getModifiedTime(file)), 'days');
-					dateText = `${daysAgo} ${this.plugin.translate('daysago')}`;
-				} else {
-					dateText = moment(this.getModifiedTime(file)).format(this.plugin.settings.dateFormat);
-				}
-			}
-
 			// Handle compact mode differently
-			if (this.plugin.settings.density === 'compact' && this.plugin.settings.showTime) {
-				// Create a header container for title and date
+			if (isCompact && showTime) {
+				// Create a header container for title
 				const headerContainer = contentContainer.createEl('div', {
 					cls: 'recent-note-header'
 				});
@@ -1055,12 +1116,6 @@ class RecentNotesView extends ItemView {
 				headerContainer.createEl('div', { 
 					text: this.getFileDisplayName(file),
 					cls: 'recent-note-title'
-				});
-				
-				// Add date to the header
-				headerContainer.createEl('span', {
-					text: dateText,
-					cls: 'recent-note-date'
 				});
 				
 				// Add preview in compact mode if enabled
@@ -1106,7 +1161,7 @@ class RecentNotesView extends ItemView {
 				}
 
 				// Only show date if showTime is enabled
-				if (this.plugin.settings.showTime) {
+				if (showTime) {
 					const dateEl = infoContainer.createEl('span', {
 						text: dateText,
 						cls: this.plugin.settings.previewLines > 0 && hasMultipleLines ? 'recent-note-date recent-note-date-below' : 'recent-note-date'
@@ -1419,6 +1474,7 @@ class RecentNotesView extends ItemView {
 				if (file instanceof TFile) {
 					// Clear the cache for the modified file
 					this.firstLineCache.delete(file.path);
+					this.thumbnailCache.delete(file.path);
 					// Track the last edited file
 					this.lastEditedFile = file.path;
 				}
@@ -1586,7 +1642,7 @@ export default class RecentNotesPlugin extends Plugin {
 					this.view.moveToAdjacentNotePage('up');
 				}
 			},
-			hotkeys: [{ modifiers: [], key: 'PageUp' }]
+			hotkeys: [{ modifiers: ['Mod'], key: 'PageUp' }]
 		});
 
 		this.addCommand({
@@ -1597,7 +1653,7 @@ export default class RecentNotesPlugin extends Plugin {
 					this.view.moveToAdjacentNotePage('down');
 				}
 			},
-			hotkeys: [{ modifiers: [], key: 'PageDown' }]
+			hotkeys: [{ modifiers: ['Mod'], key: 'PageDown' }]
 		});
 
 		this.addSettingTab(new RecentNotesSettingTab(this.app, this));
@@ -1734,6 +1790,18 @@ class RecentNotesSettingTab extends PluginSettingTab {
 					if (this.plugin.view) {
 						await this.plugin.view.refreshView();
 					}
+				}));
+
+		new Setting(containerEl)
+			.setName(this.plugin.translate('pageStepSize'))
+			.setDesc(this.plugin.translate('pageStepSizeDesc'))
+			.addSlider(slider => slider
+				.setLimits(1, 50, 1)
+				.setValue(this.plugin.settings.pageStepSize)
+				.setDynamicTooltip()
+				.onChange(async (value) => {
+					this.plugin.settings.pageStepSize = value;
+					await this.plugin.saveSettings();
 				}));
 
 		new Setting(containerEl)
@@ -1932,6 +2000,7 @@ class RecentNotesSettingTab extends PluginSettingTab {
 					this.plugin.settings.thumbnailProperty = value;
 					await this.plugin.saveSettings();
 					if (this.plugin.view) {
+						this.plugin.view.clearCache();
 						await this.plugin.view.refreshView();
 					}
 				}));
