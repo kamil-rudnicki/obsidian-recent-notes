@@ -3,6 +3,11 @@
 name: Recent Notes
 id: recent-notes
 settings:
+    -
+        id: appearance-group
+        title: Appearance
+        type: heading
+        level: 1
     - 
         id: recent-notes-hover-color
         title: Hover Color
@@ -39,19 +44,140 @@ settings:
         opacity: true
         default-light: '#E8E9EA'
         default-dark: '#2D3034'
+    -
+        id: section-headers-heading
+        title: Section Headers
+        type: heading
+        level: 2
+    -
+        id: recent-notes-header-font-size
+        title: Header Font Size
+        description: Font size for the time section headers (Today, Yesterday, etc.)
+        type: variable-number
+        format: px
+        default: 12
+    -
+        id: recent-notes-header-color
+        title: Header Text Color
+        description: Text color for the time section headers
+        type: variable-themed-color
+        format: hex
+        opacity: true
+        default-light: '#666666'
+        default-dark: '#999999'
+    -
+        id: recent-notes-header-font-weight
+        title: Header Font Weight
+        description: Font weight for the time section headers
+        type: variable-select
+        default: '500'
+        options:
+            - { label: Normal, value: '400' }
+            - { label: Medium, value: '500' }
+            - { label: Semi-Bold, value: '600' }
+            - { label: Bold, value: '700' }
+    -
+        id: recent-notes-header-font-style
+        title: Header Font Style
+        description: Font style for the time section headers
+        type: variable-select
+        default: normal
+        options:
+            - { label: Normal, value: normal }
+            - { label: Italic, value: italic }
+    -
+        id: thumbnails-group
+        title: Thumbnails
+        type: heading
+        level: 1
+    -
+        id: recent-notes-thumbnail-size
+        title: Thumbnail Size
+        description: Size of the thumbnail image (width and height)
+        type: variable-number
+        format: px
+        default: 52
+    -
+        id: recent-notes-thumbnail-size-compact
+        title: Thumbnail Size (Compact)
+        description: Size of the thumbnail image in compact mode
+        type: variable-number
+        format: px
+        default: 40
+    -
+        id: recent-notes-max-width
+        title: Max Content Width
+        description: Maximum width of the preview text and thumbnail combined (only applies when thumbnail is on the right)
+        type: variable-number
+        format: px
+        default: 500
 */
 
 /* Apply default theme variables if custom ones are not set */
 body {
     --recent-notes-item-background-hover: transparent;
+    --recent-notes-max-width: 500px;
+    --recent-notes-thumbnail-size: 52px;
+    --recent-notes-thumbnail-size-compact: 40px;
+    --recent-notes-header-font-size: 12px;
+    --recent-notes-header-font-weight: 500;
+    --recent-notes-header-font-style: normal;
 }
 
 .recent-note-item {
-    padding: 10px 18px;
+    padding: 0;
     margin: 1px 0px 0px 0px;
     cursor: pointer;
     border-radius: 4px;
 }
+
+.recent-note-item-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 18px;
+    width: 100%;
+}
+
+/* When thumbnails are enabled and note has a thumbnail - reduce padding */
+.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
+    padding: 6px 8px 6px 18px;
+}
+
+/* When thumbnails are enabled but note has no thumbnail - increase padding to match height */
+.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
+    padding: 16px 18px;
+}
+
+.recent-note-item[data-thumbnail-position="right"] .recent-note-item-wrapper {
+    flex-direction: row-reverse;
+    max-width: var(--recent-notes-max-width, none);
+    /*margin-left: auto;*/
+}
+
+.recent-note-content {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+}
+
+.recent-note-thumbnail-container {
+    flex: 0 0 var(--recent-notes-thumbnail-size, 60px);
+    height: var(--recent-notes-thumbnail-size, 60px);
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--background-secondary-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recent-note-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .recent-notes-view .view-content {
     height: 100%;
     overflow-y: auto;
@@ -98,9 +224,10 @@ body {
     top: -14px;
     padding: 6px 0px;
     margin: 26px 0px 0px 0px;
-    color: var(--text-muted);
-    font-size: calc(var(--nav-item-size) * 0.9);
-    font-weight: 500;
+    color: var(--recent-notes-header-color, var(--text-muted));
+    font-size: var(--recent-notes-header-font-size, calc(var(--nav-item-size) * 0.9));
+    font-weight: var(--recent-notes-header-font-weight, 500);
+    font-style: var(--recent-notes-header-font-style, normal);
     z-index: 1;
     border-bottom: 1px solid var(--background-modifier-border);
 }
@@ -148,6 +275,7 @@ body {
     background-color: var(--recent-notes-hover-color, var(--recent-notes-item-background-hover));
     color: var(--recent-notes-hover-text-color);
 }
+
 .recent-note-item:hover:not(.is-active) .recent-note-date {
     color: var(--recent-notes-hover-text-color, var(--text-muted));
 }
@@ -164,8 +292,41 @@ body {
 }
 
 /* Compact view styles */
-body[data-recent-notes-density="compact"] div.recent-note-item {
+body[data-recent-notes-density="compact"] div.recent-note-item-wrapper {
     padding: 5px;
+    gap: 8px;
+}
+
+/* Compact mode with thumbnails enabled - adjust padding for consistent height */
+body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
+    padding: 5px;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
+    padding: 5px;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-thumbnail-container {
+    flex: 0 0 var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
+    height: var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
+    background-color: transparent;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-thumbnail {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-date-compact {
+    font-size: 0.7em;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1.3;
+    margin-left: auto;
+    padding-left: 8px;
 }
 
 body[data-recent-notes-density="compact"] .recent-notes-view h6 {
@@ -189,21 +350,13 @@ body[data-recent-notes-density="compact"] .recent-note-title {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: clip;
-    order: 1;
-}
-
-body[data-recent-notes-density="compact"] .recent-note-date {
-    color: gray;
-    font-size: 0.8em;
-    white-space: nowrap; 
-    margin-left: 8px;
-    order: 2;
 }
 
 body[data-recent-notes-density="compact"] .recent-note-preview {
     margin-top: 2px;
     font-size: 0.85em;
     color: var(--text-muted);
+    text-align: left;
 }
 
 body[data-recent-notes-density="compact"] .recent-note-preview-line {
