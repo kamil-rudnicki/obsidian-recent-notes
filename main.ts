@@ -1479,7 +1479,7 @@ class RecentNotesView extends ItemView {
 
 				// Show folder name if enabled
 				if (this.plugin.settings.showFolderName && file.parent && file.parent.path !== '/') {
-					const folderEl = fileContainer.createEl('div', {
+					const folderEl = contentContainer.createEl('div', {
 						cls: 'recent-note-folder'
 					});
 					const folderIcon = folderEl.createSpan({ cls: 'recent-note-folder-icon' });
