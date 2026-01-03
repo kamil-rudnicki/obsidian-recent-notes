@@ -68,6 +68,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Move to next note",
 		moveToPreviousPage: "Move to previous page",
 		moveToNextPage: "Move to next page",
+		moveToStart: "Move to start",
 		
 		today: "Today",
 		yesterday: "Yesterday",
@@ -131,6 +132,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Przejdź do następnej notatki",
 		moveToPreviousPage: "Przejdź do poprzedniej strony",
 		moveToNextPage: "Przejdź do następnej strony",
+		moveToStart: "Przejdź do początku",
 		
 		today: "Dzisiaj",
 		yesterday: "Wczoraj",
@@ -166,6 +168,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Ir a la siguiente nota",
 		moveToPreviousPage: "Ir a la página anterior",
 		moveToNextPage: "Ir a la página siguiente",
+		moveToStart: "Ir al principio",
 		
 		today: "Hoy",
 		yesterday: "Ayer",
@@ -207,6 +210,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Aller à la note suivante",
 		moveToPreviousPage: "Aller à la page précédente",
 		moveToNextPage: "Aller à la page suivante",
+		moveToStart: "Aller au début",
 		
 		today: "Aujourd'hui",
 		yesterday: "Hier",
@@ -248,6 +252,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Zur nächsten Notiz",
 		moveToPreviousPage: "Eine Seite nach oben",
 		moveToNextPage: "Eine Seite nach unten",
+		moveToStart: "Zum Anfang springen",
 		
 		today: "Heute",
 		yesterday: "Gestern",
@@ -311,6 +316,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Vai alla nota successiva",
 		moveToPreviousPage: "Vai alla pagina precedente",
 		moveToNextPage: "Vai alla pagina successiva",
+		moveToStart: "Vai all'inizio",
 		
 		today: "Oggi",
 		yesterday: "Ieri",
@@ -352,6 +358,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "次のノートへ",
 		moveToPreviousPage: "前のページへ",
 		moveToNextPage: "次のページへ",
+		moveToStart: "最初へ移動",
 		
 		today: "今日",
 		yesterday: "昨日",
@@ -387,6 +394,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "다음 노트로",
 		moveToPreviousPage: "이전 페이지로",
 		moveToNextPage: "다음 페이지로",
+		moveToStart: "처음으로 이동",
 		
 		today: "오늘",
 		yesterday: "어제",
@@ -422,6 +430,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "移至下一个笔记",
 		moveToPreviousPage: "移至上一页",
 		moveToNextPage: "移至下一页",
+		moveToStart: "移至开头",
 		
 		today: "今天",
 		yesterday: "昨天",
@@ -457,6 +466,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "К следующей заметке",
 		moveToPreviousPage: "На страницу вверх",
 		moveToNextPage: "На страницу вниз",
+		moveToStart: "В начало",
 		
 		today: "Сегодня",
 		yesterday: "Вчера",
@@ -498,6 +508,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Ir para a próxima nota",
 		moveToPreviousPage: "Ir para a página anterior",
 		moveToNextPage: "Ir para a página seguinte",
+		moveToStart: "Ir para o início",
 		
 		today: "Hoje",
 		yesterday: "Ontem",
@@ -533,6 +544,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Ir para próxima nota",
 		moveToPreviousPage: "Ir para a página anterior",
 		moveToNextPage: "Ir para a página seguinte",
+		moveToStart: "Ir para o início",
 		
 		today: "Hoje",
 		yesterday: "Ontem",
@@ -568,6 +580,7 @@ const LOCALES: Record<string, Record<string, string>> = {
 		moveToNext: "Ugrás az következő jegyzetre",
 		moveToPreviousPage: "Ugrás az előző oldalra",
 		moveToNextPage: "Ugrás a következő oldalra",
+		moveToStart: "Ugrás az elejére",
 		
 		today: "Ma",
 		yesterday: "Tegnap",
@@ -694,6 +707,21 @@ class RecentNotesView extends ItemView {
 		if (nextIndex !== currentIndex) {
 			this.openFile(files[nextIndex]);
 		}
+	}
+
+	public async moveToStart(): Promise<void> {
+		const files = this.getRecentFiles();
+		if (files.length === 0) return;
+		await this.openFile(files[0]);
+		
+		// Also scroll to the very top to show the section header
+		// Using a small timeout to ensure it happens after openFile's own scrolling
+		setTimeout(() => {
+			const container = this.containerEl.children[1];
+			if (container) {
+				container.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+		}, 50);
 	}
 
 
@@ -1919,6 +1947,17 @@ export default class RecentNotesPlugin extends Plugin {
 				}
 			},
 			hotkeys: [{ modifiers: ['Mod'], key: 'PageDown' }]
+		});
+
+		this.addCommand({
+			id: 'move-to-start-recent-note',
+			name: this.translate('moveToStart'),
+			callback: async () => {
+				if (this.view) {
+					await this.view.moveToStart();
+				}
+			},
+			hotkeys: [{ modifiers: ['Mod'], key: 'Home' }]
 		});
 
 
