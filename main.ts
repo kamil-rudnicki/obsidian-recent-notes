@@ -789,10 +789,16 @@ class RecentNotesView extends ItemView {
 		return [...pinnedFiles, ...unpinnedFiles];
 	}
 
-	private async openFile(file: TFile, keepFocus: boolean = false, newTab: boolean = false): Promise<void> {
+	public async openFile(file: TFile, keepFocus: boolean = false, newTab: boolean = false): Promise<void> {
 		const leaf = this.app.workspace.getLeaf(newTab);
 		if (leaf) {
 			await leaf.openFile(file, { active: !keepFocus });
+			
+			if (file.extension !== 'md') {
+				setTimeout(() => {
+					this.debouncedRefresh();
+				}, 50);
+			}
 		}
 	}
 
@@ -1651,12 +1657,6 @@ class RecentNotesView extends ItemView {
 				await this.openFile(file);
 				lastTapTime = Date.now(); // Record when we opened the file
 				
-				if (file.extension !== 'md') {
-					setTimeout(() => {
-						this.debouncedRefresh();
-					}, 50);
-				}
-				
 				// Block all clicks and context menus temporarily
 				blockEventsTemporarily();
 			} else {
@@ -1734,13 +1734,7 @@ class RecentNotesView extends ItemView {
 
 			// Middle mouse button click or Ctrl/Meta key pressed to open in new tab
 			const openInNewTab = event.button === 1 || event.metaKey || event.ctrlKey;
-			await this.openFile(file, !openInNewTab, openInNewTab);
-			
-			if (file.extension !== 'md') {
-				setTimeout(() => {
-					this.debouncedRefresh();
-				}, 50);
-			}
+			await this.openFile(file, false, openInNewTab);
 		});
 
 		// Add keydown listener for accessibility
@@ -1748,22 +1742,41 @@ class RecentNotesView extends ItemView {
 			if (event.key === 'Enter') {
 				event.preventDefault();
 				event.stopPropagation();
-				
+
 				const openInNewTab = event.metaKey || event.ctrlKey;
-				await this.openFile(file, !openInNewTab, openInNewTab);
-				
-				if (file.extension !== 'md') {
-					setTimeout(() => {
-						this.debouncedRefresh();
-					}, 50);
-				}
-			} else if (event.key === 'ArrowUp') {
-				event.preventDefault();
-				this.moveToAdjacentNote('up');
-			} else if (event.key === 'ArrowDown') {
-				event.preventDefault();
-				this.moveToAdjacentNote('down');
+				await this.openFile(file, false, openInNewTab);
 			}
+			// } else if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home'].includes(event.key)) {
+			// 	// If any modifier is pressed, let it bubble to Obsidian's command/hotkey system
+			// 	if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+			// 		return;
+			// 	}
+			//
+			// 	// Focus-only navigation when no modifiers are pressed
+			// 	const items = Array.from(this.containerEl.querySelectorAll('.recent-note-item')) as HTMLElement[];
+			// 	const currentIndex = items.indexOf(fileContainer);
+			//
+			// 	if (event.key === 'ArrowUp') {
+			// 		event.preventDefault();
+			// 		if (currentIndex > 0) items[currentIndex - 1].focus();
+			// 	} else if (event.key === 'ArrowDown') {
+			// 		event.preventDefault();
+			// 		if (currentIndex < items.length - 1) items[currentIndex + 1].focus();
+			// 	} else if (event.key === 'Home') {
+			// 		event.preventDefault();
+			// 		if (items.length > 0) items[0].focus();
+			// 	} else if (event.key === 'PageUp') {
+			// 		event.preventDefault();
+			// 		const pageSize = this.plugin.settings.pageStepSize || 10;
+			// 		const targetIndex = Math.max(0, currentIndex - pageSize);
+			// 		if (items[targetIndex]) items[targetIndex].focus();
+			// 	} else if (event.key === 'PageDown') {
+			// 		event.preventDefault();
+			// 		const pageSize = this.plugin.settings.pageStepSize || 10;
+			// 		const targetIndex = Math.min(items.length - 1, currentIndex + pageSize);
+			// 		if (items[targetIndex]) items[targetIndex].focus();
+			// 	}
+			// }
 		});
 
 		// Add hover preview functionality
@@ -2026,6 +2039,7 @@ export default class RecentNotesPlugin extends Plugin {
 				}
 				return false;
 			},
+			hotkeys: [{ modifiers: ['Mod'], key: 'ArrowUp' }]
 		});
 
 		this.addCommand({
@@ -2040,6 +2054,7 @@ export default class RecentNotesPlugin extends Plugin {
 				}
 				return false;
 			},
+			hotkeys: [{ modifiers: ['Mod'], key: 'ArrowDown' }]
 		});
 
 		this.addCommand({
@@ -2112,12 +2127,25 @@ export default class RecentNotesPlugin extends Plugin {
 		}
 		
 		if (leaf) {
-			workspace.revealLeaf(leaf);
-			// Focus the active item in the list after a short delay to allow for rendering
+			await workspace.revealLeaf(leaf);
+			
+			// Get the active file to focus it
+			const activeFile = this.app.workspace.getActiveFile();
+			
+			// Focus the active item in the list and the note itself
 			setTimeout(() => {
 				const activeItem = leaf?.view.containerEl.querySelector('.recent-note-item.is-active') as HTMLElement;
 				if (activeItem) {
+					// We focus the list item first
 					activeItem.focus();
+					
+					// If there is an active file, we use openFile to simulate the 'Enter' logic
+					// as requested by the user. This ensures correct navigation state.
+					if (activeFile && activeFile.path === activeItem.getAttribute('data-path')) {
+						if (leaf?.view instanceof RecentNotesView) {
+							leaf.view.openFile(activeFile, false);
+						}
+					}
 				}
 			}, 150);
 		}
