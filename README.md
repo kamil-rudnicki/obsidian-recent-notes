@@ -28,6 +28,8 @@ Transform how you navigate your notes with this elegant, timeline-based view of 
   - Note title (can use `title` property instead of filename)
   - First lines of content (cleaned of Markdown formatting)
   - Last edit timestamp
+  - Folder path showing note location
+  - Thumbnail preview for image and media files
 
 ## How to Use
 
@@ -52,6 +54,14 @@ Transform how you navigate your notes with this elegant, timeline-based view of 
 2. Extract the files into your `.obsidian/plugins/obsidian-recent-notes` folder
 3. Reload Obsidian
 4. Enable the plugin in your settings
+
+## Changelog
+
+### Version 1.5.0
+
+**New Features:**
+- **Thumbnail Previews:** Image and media files now display thumbnail previews in the recent notes list
+- **Folder Display:** Each note now shows its folder path, making it easier to understand note location and organization
 
 ## Support
 
