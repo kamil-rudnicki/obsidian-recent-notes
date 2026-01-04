@@ -1227,24 +1227,25 @@ class RecentNotesView extends ItemView {
 				const isCompact = this.plugin.settings.density === 'compact';
 				const showTime = this.plugin.settings.showTime;
 
-				if (this.plugin.settings.showThumbnail) {
-					const thumbnail = await this.getThumbnail(file);
-					if (this.currentRefreshId !== refreshId) return;
-					
-					if (thumbnail) {
-						itemWrapper.addClass('has-thumbnail');
-						const thumbnailContainer = itemWrapper.createEl('div', {
-							cls: 'recent-note-thumbnail-container'
-						});
+		if (this.plugin.settings.showThumbnail) {
+			const thumbnail = await this.getThumbnail(file);
+			if (this.currentRefreshId !== refreshId) return;
+			
+			const thumbnailContainer = itemWrapper.createEl('div', {
+				cls: 'recent-note-thumbnail-container'
+			});
 
-						thumbnailContainer.createEl('img', {
-							attr: { src: thumbnail },
-							cls: 'recent-note-thumbnail'
-						});
-					} else {
-						itemWrapper.addClass('no-thumbnail');
-					}
-				}
+			if (thumbnail) {
+				itemWrapper.addClass('has-thumbnail');
+				thumbnailContainer.createEl('img', {
+					attr: { src: thumbnail },
+					cls: 'recent-note-thumbnail'
+				});
+			} else {
+				itemWrapper.addClass('no-thumbnail');
+				thumbnailContainer.addClass('hidden-thumbnail');
+			}
+		}
 
 				const contentContainer = itemWrapper.createEl('div', {
 					cls: 'recent-note-content'
@@ -1403,18 +1404,19 @@ class RecentNotesView extends ItemView {
 				const thumbnail = await this.getThumbnail(file);
 				if (this.currentRefreshId !== refreshId) return;
 				
+				const thumbnailContainer = itemWrapper.createEl('div', {
+					cls: 'recent-note-thumbnail-container'
+				});
+
 				if (thumbnail) {
 					itemWrapper.addClass('has-thumbnail');
-					const thumbnailContainer = itemWrapper.createEl('div', {
-						cls: 'recent-note-thumbnail-container'
-					});
-
 					thumbnailContainer.createEl('img', {
 						attr: { src: thumbnail },
 						cls: 'recent-note-thumbnail'
 					});
 				} else {
 					itemWrapper.addClass('no-thumbnail');
+					thumbnailContainer.addClass('hidden-thumbnail');
 				}
 			}
 

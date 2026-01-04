@@ -139,14 +139,9 @@ body {
     width: 100%;
 }
 
-/* When thumbnails are enabled and note has a thumbnail - reduce padding */
-.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
+/* When thumbnails are enabled - use consistent padding */
+.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper {
     padding: 6px 8px 6px 18px;
-}
-
-/* When thumbnails are enabled but note has no thumbnail - increase padding to match height */
-.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
-    padding: 16px 18px;
 }
 
 .recent-note-item[data-thumbnail-position="right"] .recent-note-item-wrapper {
@@ -176,6 +171,14 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Hidden thumbnail placeholder to maintain consistent height but minimal width */
+.recent-note-thumbnail-container.hidden-thumbnail {
+    flex: 0 0 0px;
+    width: 0px;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .recent-notes-view .view-content {
@@ -317,12 +320,8 @@ body[data-recent-notes-density="compact"] div.recent-note-item-wrapper {
     gap: 8px;
 }
 
-/* Compact mode with thumbnails enabled - adjust padding for consistent height */
-body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
-    padding: 5px;
-}
-
-body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
+/* Compact mode with thumbnails enabled - use consistent padding */
+body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper {
     padding: 5px;
 }
 
@@ -330,6 +329,11 @@ body[data-recent-notes-density="compact"] .recent-note-thumbnail-container {
     flex: 0 0 var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
     height: var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
     background-color: transparent;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-thumbnail-container.hidden-thumbnail {
+    flex: 0 0 0px;
+    width: 0px;
 }
 
 body[data-recent-notes-density="compact"] .recent-note-thumbnail {
