@@ -1722,40 +1722,41 @@ class RecentNotesView extends ItemView {
 			if (event.key === 'Enter') {
 				event.preventDefault();
 				event.stopPropagation();
-				
+
 				const openInNewTab = event.metaKey || event.ctrlKey;
 				await this.openFile(file, false, openInNewTab);
-			} else if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home'].includes(event.key)) {
-				// If any modifier is pressed, let it bubble to Obsidian's command/hotkey system
-				if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
-					return;
-				}
-
-				// Focus-only navigation when no modifiers are pressed
-				const items = Array.from(this.containerEl.querySelectorAll('.recent-note-item')) as HTMLElement[];
-				const currentIndex = items.indexOf(fileContainer);
-				
-				if (event.key === 'ArrowUp') {
-					event.preventDefault();
-					if (currentIndex > 0) items[currentIndex - 1].focus();
-				} else if (event.key === 'ArrowDown') {
-					event.preventDefault();
-					if (currentIndex < items.length - 1) items[currentIndex + 1].focus();
-				} else if (event.key === 'Home') {
-					event.preventDefault();
-					if (items.length > 0) items[0].focus();
-				} else if (event.key === 'PageUp') {
-					event.preventDefault();
-					const pageSize = this.plugin.settings.pageStepSize || 10;
-					const targetIndex = Math.max(0, currentIndex - pageSize);
-					if (items[targetIndex]) items[targetIndex].focus();
-				} else if (event.key === 'PageDown') {
-					event.preventDefault();
-					const pageSize = this.plugin.settings.pageStepSize || 10;
-					const targetIndex = Math.min(items.length - 1, currentIndex + pageSize);
-					if (items[targetIndex]) items[targetIndex].focus();
-				}
 			}
+			// } else if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home'].includes(event.key)) {
+			// 	// If any modifier is pressed, let it bubble to Obsidian's command/hotkey system
+			// 	if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+			// 		return;
+			// 	}
+			//
+			// 	// Focus-only navigation when no modifiers are pressed
+			// 	const items = Array.from(this.containerEl.querySelectorAll('.recent-note-item')) as HTMLElement[];
+			// 	const currentIndex = items.indexOf(fileContainer);
+			//
+			// 	if (event.key === 'ArrowUp') {
+			// 		event.preventDefault();
+			// 		if (currentIndex > 0) items[currentIndex - 1].focus();
+			// 	} else if (event.key === 'ArrowDown') {
+			// 		event.preventDefault();
+			// 		if (currentIndex < items.length - 1) items[currentIndex + 1].focus();
+			// 	} else if (event.key === 'Home') {
+			// 		event.preventDefault();
+			// 		if (items.length > 0) items[0].focus();
+			// 	} else if (event.key === 'PageUp') {
+			// 		event.preventDefault();
+			// 		const pageSize = this.plugin.settings.pageStepSize || 10;
+			// 		const targetIndex = Math.max(0, currentIndex - pageSize);
+			// 		if (items[targetIndex]) items[targetIndex].focus();
+			// 	} else if (event.key === 'PageDown') {
+			// 		event.preventDefault();
+			// 		const pageSize = this.plugin.settings.pageStepSize || 10;
+			// 		const targetIndex = Math.min(items.length - 1, currentIndex + pageSize);
+			// 		if (items[targetIndex]) items[targetIndex].focus();
+			// 	}
+			// }
 		});
 
 		// Add hover preview functionality
