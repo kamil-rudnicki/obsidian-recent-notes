@@ -96,7 +96,7 @@ settings:
         description: Size of the thumbnail image (width and height)
         type: variable-number
         format: px
-        default: 52
+        default: 42
     -
         id: recent-notes-thumbnail-size-compact
         title: Thumbnail Size (Compact)
@@ -117,7 +117,7 @@ settings:
 body {
     --recent-notes-item-background-hover: transparent;
     --recent-notes-max-width: 500px;
-    --recent-notes-thumbnail-size: 52px;
+    --recent-notes-thumbnail-size: 42px;
     --recent-notes-thumbnail-size-compact: 40px;
     --recent-notes-header-font-size: 12px;
     --recent-notes-header-font-weight: 500;
