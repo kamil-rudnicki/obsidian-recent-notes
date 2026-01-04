@@ -96,7 +96,7 @@ settings:
         description: Size of the thumbnail image (width and height)
         type: variable-number
         format: px
-        default: 52
+        default: 42
     -
         id: recent-notes-thumbnail-size-compact
         title: Thumbnail Size (Compact)
@@ -117,7 +117,7 @@ settings:
 body {
     --recent-notes-item-background-hover: transparent;
     --recent-notes-max-width: 500px;
-    --recent-notes-thumbnail-size: 52px;
+    --recent-notes-thumbnail-size: 42px;
     --recent-notes-thumbnail-size-compact: 40px;
     --recent-notes-header-font-size: 12px;
     --recent-notes-header-font-weight: 500;
@@ -139,14 +139,9 @@ body {
     width: 100%;
 }
 
-/* When thumbnails are enabled and note has a thumbnail - reduce padding */
-.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
+/* When thumbnails are enabled - use consistent padding */
+.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper {
     padding: 6px 8px 6px 18px;
-}
-
-/* When thumbnails are enabled but note has no thumbnail - increase padding to match height */
-.recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
-    padding: 16px 18px;
 }
 
 .recent-note-item[data-thumbnail-position="right"] .recent-note-item-wrapper {
@@ -178,6 +173,14 @@ body {
     object-fit: cover;
 }
 
+/* Hidden thumbnail placeholder to maintain consistent height but minimal width */
+.recent-note-thumbnail-container.hidden-thumbnail {
+    flex: 0 0 0px;
+    width: 0px;
+    opacity: 0;
+    visibility: hidden;
+}
+
 .recent-notes-view .view-content {
     height: 100%;
     overflow-y: auto;
@@ -190,6 +193,24 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: clip;
+}
+.recent-note-folder {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: calc(var(--nav-item-size) * 0.85);
+    color: var(--text-muted);
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+.recent-note-folder-icon {
+    --icon-size: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
 }
 .recent-note-date {
     color: var(--text-muted);
@@ -267,7 +288,8 @@ body {
     color: var(--recent-notes-active-text-color);
 }
 .recent-note-item.is-active .recent-note-date,
-.recent-note-item.is-active .recent-note-info {
+.recent-note-item.is-active .recent-note-info,
+.recent-note-item.is-active .recent-note-folder {
     color: var(--recent-notes-active-text-color, var(--text-muted));
 }
 
@@ -279,7 +301,8 @@ body {
 .recent-note-item:hover:not(.is-active) .recent-note-date {
     color: var(--recent-notes-hover-text-color, var(--text-muted));
 }
-.recent-note-item:hover:not(.is-active) .recent-note-info {
+.recent-note-item:hover:not(.is-active) .recent-note-info,
+.recent-note-item:hover:not(.is-active) .recent-note-folder {
     color: var(--recent-notes-hover-text-color, var(--text-muted));
 }
 
@@ -297,12 +320,8 @@ body[data-recent-notes-density="compact"] div.recent-note-item-wrapper {
     gap: 8px;
 }
 
-/* Compact mode with thumbnails enabled - adjust padding for consistent height */
-body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.has-thumbnail {
-    padding: 5px;
-}
-
-body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper.no-thumbnail {
+/* Compact mode with thumbnails enabled - use consistent padding */
+body[data-recent-notes-density="compact"] .recent-note-item[data-thumbnails-enabled="true"] .recent-note-item-wrapper {
     padding: 5px;
 }
 
@@ -310,6 +329,11 @@ body[data-recent-notes-density="compact"] .recent-note-thumbnail-container {
     flex: 0 0 var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
     height: var(--recent-notes-thumbnail-size-compact, var(--recent-notes-thumbnail-size, 40px));
     background-color: transparent;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-thumbnail-container.hidden-thumbnail {
+    flex: 0 0 0px;
+    width: 0px;
 }
 
 body[data-recent-notes-density="compact"] .recent-note-thumbnail {
@@ -363,5 +387,10 @@ body[data-recent-notes-density="compact"] .recent-note-preview-line {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: clip;
+}
+
+body[data-recent-notes-density="compact"] .recent-note-folder {
+    font-size: 0.8em;
+    margin-top: 1px;
 }
 
