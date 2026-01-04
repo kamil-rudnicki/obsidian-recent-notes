@@ -49,7 +49,7 @@ const DEFAULT_SETTINGS: RecentNotesSettings = {
 	propertyModified: '',
 	density: 'comfortable',
 	openInNewTab: 'new',
-	showThumbnail: false,
+	showThumbnail: true,
 	thumbnailProperty: 'image',
 	thumbnailPosition: 'right',
 	pageStepSize: 10
