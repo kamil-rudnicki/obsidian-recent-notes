@@ -805,7 +805,14 @@ class RecentNotesView extends ItemView {
 	private scrollToActiveNote() {
 		const activeItem = this.containerEl.querySelector('.recent-note-item.is-active') as HTMLElement;
 		if (activeItem) {
-			activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+			const container = this.containerEl.children[1];
+			const firstItem = container?.querySelector('.recent-note-item');
+			if (firstItem === activeItem && container) {
+				// Scroll to top so time header or pinned section is visible
+				container.scrollTo({ top: 0, behavior: 'smooth' });
+			} else {
+				activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+			}
 		}
 	}
 
