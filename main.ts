@@ -1960,15 +1960,39 @@ class RecentNotesView extends ItemView {
 		if (file.extension !== 'md') {
 			return file.basename;
 		}
-		
+
 		// For markdown files, check if there's a title in frontmatter
 		const fileMetadata = this.app.metadataCache.getFileCache(file);
 		if (fileMetadata && fileMetadata.frontmatter && fileMetadata.frontmatter.title) {
 			return fileMetadata.frontmatter.title;
 		}
-		
+
+		// For daily notes (YYYY-MM-DD format), append a relative date label
+		const dailyNoteDate = moment(file.basename, 'YYYY-MM-DD', true);
+		if (dailyNoteDate.isValid()) {
+			const label = this.getRelativeDateLabel(dailyNoteDate);
+			if (label) {
+				return `${file.basename} (${label})`;
+			}
+		}
+
 		// Default to basename if no title in frontmatter
 		return file.basename;
+	}
+
+	private getRelativeDateLabel(date: moment.Moment): string {
+		const today = moment().startOf('day');
+		const diff = date.startOf('day').diff(today, 'days');
+
+		if (diff === 0) return 'today';
+		if (diff === -1) return 'yesterday';
+		if (diff === 1) return 'tomorrow';
+
+		const dayName = date.format('ddd');
+		if (diff >= 2 && diff <= 7) return `next ${dayName}`;
+		if (diff >= -7 && diff <= -2) return `last ${dayName}`;
+
+		return dayName;
 	}
 }
 

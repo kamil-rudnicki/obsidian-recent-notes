@@ -7,8 +7,8 @@
 ```sh
 npm run version
 git commit
-git tag -a 1.5.2 -m "1.5.2"
-git push origin 1.5.2
+git tag -a 1.5.4 -m "1.5.4"
+git push origin 1.5.4
 ```
 
 5. Create new release https://github.com/kamil-rudnicki/obsidian-recent-notes/releases
